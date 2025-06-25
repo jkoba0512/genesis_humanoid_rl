@@ -1,0 +1,107 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.python-version
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# PyCharm
+.idea/
+
+# Training Outputs
+logs/
+models/
+checkpoints/
+runs/
+wandb/
+*.npz
+
+# Genesis Cache
+.cache/
+*.taichi_cache
+
+# Demo Videos (large files - keep a few examples)
+demo_videos/*.mp4
+demo_videos/*.avi
+!demo_videos/README.md
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Large model files
+*.pt
+*.pth
+*.pkl
+*.pickle
+
+# Data files (if any)
+data/
+dataset/
+
+# Compiled Genesis kernels
+*.so
+*.dylib
+*.dll
+
+# Configuration files with secrets (if any)
+.env.local
+.env.production
+config/secrets.json
+
+# Test files
+test_*.py
+quick_*.py
+verify_*.py
+
+# External repositories (use as references, not submodules)
+genesis_humanoid_learning/
+assets/robots/g1/awesome-robot-descriptions/

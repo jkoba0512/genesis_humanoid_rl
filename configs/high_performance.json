@@ -1,0 +1,35 @@
+{
+    "env": {
+        "episode_length": 1500,
+        "simulation_fps": 100,
+        "control_freq": 20,
+        "target_velocity": 1.2,
+        "n_envs": 8
+    },
+    "algorithm": {
+        "learning_rate": 1e-4,
+        "n_steps": 4096,
+        "batch_size": 128,
+        "n_epochs": 15,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_range": 0.2,
+        "ent_coef": 0.005,
+        "vf_coef": 0.5,
+        "max_grad_norm": 0.5,
+        "policy_kwargs": {
+            "net_arch": [512, 512, 256],
+            "activation_fn": "tanh"
+        }
+    },
+    "training": {
+        "total_timesteps": 2000000,
+        "save_freq": 100000,
+        "eval_freq": 25000,
+        "eval_episodes": 10,
+        "log_interval": 5,
+        "experiment_name": "humanoid_walk_high_perf",
+        "log_dir": "./logs/high_perf",
+        "model_dir": "./models/high_perf"
+    }
+}

@@ -1,0 +1,35 @@
+{
+    "env": {
+        "episode_length": 1000,
+        "simulation_fps": 100,
+        "control_freq": 20,
+        "target_velocity": 1.0,
+        "n_envs": 4
+    },
+    "algorithm": {
+        "learning_rate": 3e-4,
+        "n_steps": 2048,
+        "batch_size": 64,
+        "n_epochs": 10,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_range": 0.2,
+        "ent_coef": 0.01,
+        "vf_coef": 0.5,
+        "max_grad_norm": 0.5,
+        "policy_kwargs": {
+            "net_arch": [256, 256, 128],
+            "activation_fn": "tanh"
+        }
+    },
+    "training": {
+        "total_timesteps": 1000000,
+        "save_freq": 50000,
+        "eval_freq": 10000,
+        "eval_episodes": 5,
+        "log_interval": 10,
+        "experiment_name": "humanoid_walk_sb3",
+        "log_dir": "./logs/sb3",
+        "model_dir": "./models/sb3"
+    }
+}
