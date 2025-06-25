@@ -1,0 +1,30 @@
+{
+    "env": {
+        "simulation_fps": 100,
+        "control_freq": 20,
+        "curriculum_config_path": "./medium_curriculum_progress.json"
+    },
+    "algorithm": {
+        "learning_rate": 3e-4,
+        "n_steps": 1024,
+        "batch_size": 64,
+        "n_epochs": 8,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_range": 0.2,
+        "ent_coef": 0.01,
+        "vf_coef": 0.5,
+        "max_grad_norm": 0.5,
+        "policy_kwargs": {
+            "net_arch": [256, 256]
+        }
+    },
+    "training": {
+        "total_timesteps": 100000,
+        "save_freq": 10000,
+        "log_interval": 1,
+        "experiment_name": "curriculum_medium",
+        "log_dir": "./logs/curriculum_medium",
+        "model_dir": "./models/curriculum_medium"
+    }
+}

@@ -44,8 +44,12 @@ class HumanoidWalkingEnv(Env):
         self.episode_length = episode_length
         self.target_velocity = target_velocity
         
-        # Initialize Genesis
-        gs.init()
+        # Initialize Genesis only if not already initialized
+        try:
+            gs.init()
+        except RuntimeError as e:
+            if "Genesis already initialized" not in str(e):
+                raise
         
         # Scene and robot will be initialized in reset()
         self.scene = None
@@ -72,7 +76,7 @@ class HumanoidWalkingEnv(Env):
                 dt=1.0 / self.simulation_fps,
                 substeps=10,
             ),
-            "show_viewer": self.render_mode is not None,
+            "show_viewer": False,  # Disable viewer for faster initialization
         }
         
         if self.render_mode is not None:

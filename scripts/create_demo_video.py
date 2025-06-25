@@ -1,180 +1,224 @@
 #!/usr/bin/env python3
 """
-Create a demonstration video of the current genesis_humanoid_rl implementation.
-Shows G1 robot loading, grounding system, and basic physics simulation.
+Demo script for creating videos with Genesis cameras.
+
+This script demonstrates the correct way to record videos with Genesis cameras,
+including proper setup, recording, and common gotchas to avoid.
 """
 
-import genesis as gs
 import numpy as np
-import torch
-import os
-import sys
-import time
-
-# Add project root to Python path  
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, project_root)
-from robot_grounding import RobotGroundingCalculator
+import genesis as gs
+from pathlib import Path
 
 
-def main():
-    print("=== Genesis Humanoid RL Demo Video Creation ===")
+def create_demo_video():
+    """Create a demo video showing Genesis camera recording capabilities."""
     
-    # Initialize Genesis
-    gs.init()
+    # Initialize Genesis with GPU backend for better performance
+    gs.init(backend=gs.gpu)
     
-    # Create scene in headless mode for recording
+    # Create scene with headless rendering (no GUI for video recording)
     scene = gs.Scene(
-        sim_options=gs.options.SimOptions(dt=0.01, substeps=10),
-        show_viewer=False,  # Headless mode for server environment
-    )
-    
-    # Add ground plane
-    scene.add_entity(gs.morphs.Plane())
-    
-    # Add camera for recording
-    camera = scene.add_camera(
-        res=(1280, 720),
-        pos=(3.5, -2.0, 2.0),
-        lookat=(0.0, 0.0, 1.0),
-        fov=45,
-        GUI=False
-    )
-    
-    # Load G1 robot with automatic grounding
-    urdf_path = os.path.join(project_root, "assets/robots/g1/g1_29dof.urdf")
-    
-    print("Loading Unitree G1 robot...")
-    robot = scene.add_entity(
-        gs.morphs.URDF(
-            file=urdf_path,
-            pos=(0, 0, 1.0),  # Initial position, will be adjusted
-            euler=(0, 0, 0),
+        show_viewer=False,  # Important: disable viewer for video recording
+        renderer=gs.renderers.Rasterizer(),  # Use rasterizer for better performance
+        rigid_options=gs.options.RigidOptions(
+            dt=0.01,  # 100 FPS simulation
         ),
     )
     
-    # Build scene
+    # Add ground plane
+    plane = scene.add_entity(gs.morphs.Plane())
+    
+    # Add robot (using assets from the project)
+    robot_path = Path(__file__).parent.parent / "assets" / "robots" / "g1" / "g1_29dof.urdf"
+    if robot_path.exists():
+        robot = scene.add_entity(
+            gs.morphs.URDF(file=str(robot_path)),
+            pos=(0, 0, 0.8),  # Start at walking height
+        )
+    else:
+        # Fallback to a simple box if robot not available
+        robot = scene.add_entity(
+            gs.morphs.Box(size=(0.5, 0.3, 1.0)),
+            pos=(0, 0, 0.8),
+        )
+    
+    # Add multiple cameras for different angles
+    cameras = []
+    
+    # Front camera (static)
+    cam_front = scene.add_camera(
+        res=(1280, 720),  # HD resolution
+        pos=(3.0, 0.0, 1.0),
+        lookat=(0, 0, 0.8),
+        fov=45,
+        GUI=False,  # Critical: must be False for recording
+    )
+    cameras.append(("front", cam_front))
+    
+    # Side camera (orbiting)
+    cam_side = scene.add_camera(
+        res=(1280, 720),
+        pos=(0.0, 3.0, 1.0),
+        lookat=(0, 0, 0.8),
+        fov=45,
+        GUI=False,
+    )
+    cameras.append(("side", cam_side))
+    
+    # Top-down camera (static)
+    cam_top = scene.add_camera(
+        res=(1280, 720),
+        pos=(0.0, 0.0, 5.0),
+        lookat=(0, 0, 0.8),
+        fov=60,
+        GUI=False,
+    )
+    cameras.append(("top", cam_top))
+    
+    # Build the scene
     scene.build()
     
-    # Apply automatic grounding
-    print("Applying robot grounding system...")
-    calculator = RobotGroundingCalculator(robot, verbose=True)
-    grounding_height = calculator.get_grounding_height(safety_margin=0.03)
-    robot.set_pos(torch.tensor([0, 0, grounding_height]))
+    print("Starting video recording...")
     
-    # Let the robot settle
-    print("Stabilizing robot...")
-    for _ in range(10):
+    # Start recording on all cameras
+    for name, cam in cameras:
+        cam.start_recording()
+        print(f"Recording started for {name} camera")
+    
+    # Simulation and recording loop
+    n_frames = 300  # 3 seconds at 100 FPS
+    
+    for i in range(n_frames):
+        # Step the simulation
         scene.step()
+        
+        # Move the orbiting camera
+        angle = 2 * np.pi * i / n_frames
+        orbit_radius = 3.0
+        cam_side.set_pose(
+            pos=(orbit_radius * np.cos(angle), orbit_radius * np.sin(angle), 1.5),
+            lookat=(0, 0, 0.8),
+        )
+        
+        # Apply some basic forces to the robot for movement
+        if hasattr(robot, 'set_dofs_kp'):
+            # If it's a robot with joints, apply some simple walking motion
+            t = i * 0.01  # simulation time
+            joint_targets = np.sin(t * 2.0) * 0.3  # Simple sinusoidal motion
+            robot.set_dofs_kp([100.0] * robot.n_dofs)
+            robot.set_dofs_kd([10.0] * robot.n_dofs)
+            robot.control_dofs_position([joint_targets] * robot.n_dofs)
+        
+        # Render all cameras
+        for name, cam in cameras:
+            cam.render()
+        
+        # Progress indicator
+        if i % 60 == 0:
+            print(f"Recording progress: {i/n_frames*100:.1f}%")
     
-    print(f"✓ G1 robot loaded with {robot.n_dofs} DOFs")
-    print(f"✓ Robot positioned at height: {grounding_height:.3f}m")
-    print(f"✓ Robot has {robot.n_links} links")
+    print("Stopping recording and saving videos...")
     
-    # Create demo videos directory
-    os.makedirs("demo_videos", exist_ok=True)
+    # Stop recording and save videos
+    output_dir = Path(__file__).parent.parent / "videos"
+    output_dir.mkdir(exist_ok=True)
     
-    # Start recording
-    timestamp = time.strftime("%Y%m%d_%H%M%S")
-    video_path = f"demo_videos/genesis_humanoid_rl_demo_{timestamp}.mp4"
+    for name, cam in cameras:
+        output_file = output_dir / f"demo_{name}.mp4"
+        cam.stop_recording(save_to_filename=str(output_file), fps=60)
+        print(f"Video saved: {output_file}")
     
-    camera.start_recording()
-    print(f"Recording demo video: {video_path}")
+    print("Demo video creation complete!")
+
+
+def create_multi_modal_video():
+    """Create a demo showing different rendering modes (RGB, depth, segmentation)."""
     
-    # Get initial joint positions
-    initial_pos = robot.get_dofs_position()
+    gs.init(backend=gs.gpu)
     
-    step_count = 0
-    max_steps = 1500  # 15 seconds at 100 FPS
+    scene = gs.Scene(
+        show_viewer=False,
+        renderer=gs.renderers.Rasterizer(),
+    )
     
-    try:
-        while step_count < max_steps:
-            sim_time = step_count * 0.01
-            
-            # Define phases
-            if step_count < 300:
-                phase_name = "Phase 1: Robot Loading & Grounding"
-                target_pos = initial_pos.clone()
-            elif step_count < 700:
-                phase_name = "Phase 2: Joint Movement Demo"
-                t = (step_count - 300) * 0.01
-                target_pos = initial_pos.clone()
-                
-                # Simple joint oscillation to show the robot is responsive
-                if robot.n_dofs > 6:
-                    amplitude = 0.2
-                    frequency = 0.5
-                    target_pos[0] += amplitude * np.sin(2 * np.pi * frequency * t)
-                    target_pos[1] += amplitude * np.cos(2 * np.pi * frequency * t)
-                    if robot.n_dofs > 8:
-                        target_pos[6] += amplitude * np.sin(2 * np.pi * frequency * t + np.pi)
-                        target_pos[7] += amplitude * np.cos(2 * np.pi * frequency * t + np.pi)
-            elif step_count < 1200:
-                phase_name = "Phase 3: Observation System Demo"
-                # Show different joint positions to demonstrate observation extraction
-                t = (step_count - 700) * 0.01
-                target_pos = initial_pos.clone()
-                
-                # More dynamic movement to show observation capabilities
-                if robot.n_dofs > 12:
-                    freq = 0.8
-                    amp = 0.3
-                    target_pos[0] += amp * np.sin(2 * np.pi * freq * t)
-                    target_pos[2] += amp * np.sin(2 * np.pi * freq * t + np.pi/3)
-                    target_pos[6] += amp * np.sin(2 * np.pi * freq * t + np.pi)
-                    target_pos[8] += amp * np.sin(2 * np.pi * freq * t + 4*np.pi/3)
-            else:
-                phase_name = "Phase 4: Return to Rest"
-                target_pos = initial_pos.clone()
-            
-            # Print progress every 2 seconds
-            if step_count % 200 == 0:
-                print(f"{phase_name} - Time: {sim_time:.1f}s/{max_steps*0.01:.1f}s")
-                
-                # Show current observations
-                pos = robot.get_pos().cpu().numpy()
-                quat = robot.get_quat().cpu().numpy()
-                joint_pos = robot.get_dofs_position().cpu().numpy()
-                joint_vel = robot.get_dofs_velocity().cpu().numpy()
-                
-                print(f"  Robot position: [{pos[0]:.3f}, {pos[1]:.3f}, {pos[2]:.3f}]")
-                print(f"  Joint positions: {joint_pos[:4]}...")
-                print(f"  Joint velocities: {joint_vel[:4]}...")
-            
-            # Apply control
-            robot.control_dofs_position(target_pos)
-            
-            # Step simulation
+    # Add some objects
+    plane = scene.add_entity(gs.morphs.Plane())
+    sphere = scene.add_entity(
+        gs.morphs.Sphere(radius=0.5),
+        pos=(0, 0, 1.0),
+        material=gs.materials.Rigid(color=(1.0, 0.0, 0.0)),
+    )
+    box = scene.add_entity(
+        gs.morphs.Box(size=(0.3, 0.3, 0.3)),
+        pos=(1.0, 0, 0.5),
+        material=gs.materials.Rigid(color=(0.0, 1.0, 0.0)),
+    )
+    
+    # Create camera
+    cam = scene.add_camera(
+        res=(640, 480),
+        pos=(3.0, 3.0, 2.0),
+        lookat=(0, 0, 0.5),
+        fov=45,
+        GUI=False,
+    )
+    
+    scene.build()
+    
+    # Record with different rendering modes
+    modes = [
+        ("rgb", {}),
+        ("depth", {"depth": True}),
+        ("segmentation", {"segmentation": True}),
+        ("normal", {"normal": True}),
+    ]
+    
+    output_dir = Path(__file__).parent.parent / "videos"
+    output_dir.mkdir(exist_ok=True)
+    
+    for mode_name, render_kwargs in modes:
+        print(f"Recording {mode_name} video...")
+        
+        cam.start_recording()
+        
+        for i in range(120):  # 2 seconds
             scene.step()
             
-            # Render frame for recording
-            camera.render(rgb=True)
+            # Move objects
+            sphere.set_pos((np.sin(i * 0.05), 0, 1.0 + 0.2 * np.cos(i * 0.1)))
+            box.set_pos((1.0 + 0.3 * np.cos(i * 0.08), 0, 0.5))
             
-            step_count += 1
+            # Render with specific mode
+            cam.render(**render_kwargs)
         
-        # Stop recording and save
-        camera.stop_recording(save_to_filename=video_path, fps=60)
-        print(f"\n✓ Demo video saved: {video_path}")
-        print(f"✓ Demo completed successfully in {step_count * 0.01:.1f} seconds!")
+        output_file = output_dir / f"multimodal_{mode_name}.mp4"
+        cam.stop_recording(save_to_filename=str(output_file), fps=60)
+        print(f"Saved: {output_file}")
+
+
+def main():
+    """Main demo function."""
+    print("Genesis Camera Video Recording Demo")
+    print("===================================")
+    
+    try:
+        # Create basic demo video
+        create_demo_video()
         
-        # Show final statistics
-        final_pos = robot.get_pos().cpu().numpy()
-        final_joint_pos = robot.get_dofs_position().cpu().numpy()
+        # Create multi-modal rendering demo
+        create_multi_modal_video()
         
-        print(f"\n=== Final State ===")
-        print(f"Robot final position: [{final_pos[0]:.3f}, {final_pos[1]:.3f}, {final_pos[2]:.3f}]")
-        print(f"Total DOFs controlled: {robot.n_dofs}")
-        print(f"Observation space size: {3 + 4 + robot.n_dofs + robot.n_dofs + robot.n_dofs + 1}")
-        print(f"Action space size: {robot.n_dofs}")
+        print("\nAll demo videos created successfully!")
+        print("Check the 'videos' directory for output files.")
         
-    except KeyboardInterrupt:
-        camera.stop_recording(save_to_filename=video_path, fps=60)
-        print(f"\n✓ Video saved: {video_path}")
-        print("Demo stopped by user")
     except Exception as e:
-        camera.stop_recording(save_to_filename=video_path, fps=60)
-        print(f"\n✓ Video saved: {video_path}")
-        print(f"Demo stopped due to error: {e}")
+        print(f"Error during video creation: {e}")
+        print("Common issues:")
+        print("1. Make sure Genesis is installed: pip install genesis-world")
+        print("2. Ensure GPU drivers are up to date")
+        print("3. Check that CUDA is available if using GPU backend")
+        print("4. Verify robot assets exist in assets/robots/g1/")
 
 
 if __name__ == "__main__":

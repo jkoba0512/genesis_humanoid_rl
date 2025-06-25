@@ -154,12 +154,15 @@ def train(config_path: str = None, render: bool = False):
     env = create_environment(env_config, render_mode=render_mode)
     
     # Create evaluation environment (single environment for consistent evaluation)
-    eval_env = Monitor(make_humanoid_env(
-        episode_length=env_config["episode_length"],
-        simulation_fps=env_config["simulation_fps"],
-        control_freq=env_config["control_freq"],
-        target_velocity=env_config["target_velocity"],
-    ))
+    # Skip eval environment for quick tests to avoid double kernel compilation
+    eval_env = None
+    if training_config.get("eval_freq", 0) > 0 and training_config["total_timesteps"] > 10000:
+        eval_env = Monitor(make_humanoid_env(
+            episode_length=env_config["episode_length"],
+            simulation_fps=env_config["simulation_fps"],
+            control_freq=env_config["control_freq"],
+            target_velocity=env_config["target_velocity"],
+        ))
     
     print(f"Environment observation space: {env.observation_space}")
     print(f"Environment action space: {env.action_space}")
@@ -194,17 +197,18 @@ def train(config_path: str = None, render: bool = False):
     # Create callbacks
     callbacks = []
     
-    # Evaluation callback
-    eval_callback = EvalCallback(
-        eval_env,
-        best_model_save_path=os.path.join(training_config["model_dir"], "best_model"),
-        log_path=training_config["log_dir"],
-        eval_freq=training_config["eval_freq"] // env_config["n_envs"],  # Adjust for vectorized env
-        n_eval_episodes=training_config["eval_episodes"],
-        deterministic=True,
-        render=False,
-    )
-    callbacks.append(eval_callback)
+    # Evaluation callback (only if eval environment was created)
+    if eval_env is not None:
+        eval_callback = EvalCallback(
+            eval_env,
+            best_model_save_path=os.path.join(training_config["model_dir"], "best_model"),
+            log_path=training_config["log_dir"],
+            eval_freq=training_config["eval_freq"] // env_config["n_envs"],  # Adjust for vectorized env
+            n_eval_episodes=training_config["eval_episodes"],
+            deterministic=True,
+            render=False,
+        )
+        callbacks.append(eval_callback)
     
     # Checkpoint callback
     checkpoint_callback = CheckpointCallback(
@@ -235,21 +239,24 @@ def train(config_path: str = None, render: bool = False):
         model.save(final_model_path)
         print(f"\n✓ Training completed! Final model saved to: {final_model_path}")
         
-        # Test the trained model
-        print("\nTesting trained model...")
-        test_episodes = 3
-        for episode in range(test_episodes):
-            obs, _ = eval_env.reset()
-            episode_reward = 0
-            done = False
-            
-            while not done:
-                action, _ = model.predict(obs, deterministic=True)
-                obs, reward, terminated, truncated, _ = eval_env.step(action)
-                episode_reward += reward
-                done = terminated or truncated
-            
-            print(f"Test episode {episode + 1}: Reward = {episode_reward:.2f}")
+        # Test the trained model (only if eval environment exists)
+        if eval_env is not None:
+            print("\nTesting trained model...")
+            test_episodes = 3
+            for episode in range(test_episodes):
+                obs, _ = eval_env.reset()
+                episode_reward = 0
+                done = False
+                
+                while not done:
+                    action, _ = model.predict(obs, deterministic=True)
+                    obs, reward, terminated, truncated, _ = eval_env.step(action)
+                    episode_reward += reward
+                    done = terminated or truncated
+                
+                print(f"Test episode {episode + 1}: Reward = {episode_reward:.2f}")
+        else:
+            print("\nSkipping model test (no evaluation environment created)")
         
     except KeyboardInterrupt:
         print("\nTraining interrupted by user")
@@ -260,7 +267,8 @@ def train(config_path: str = None, render: bool = False):
     
     finally:
         env.close()
-        eval_env.close()
+        if eval_env is not None:
+            eval_env.close()
 
 
 def main():
