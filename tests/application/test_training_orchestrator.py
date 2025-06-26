@@ -323,6 +323,22 @@ class TestTrainingOrchestrator:
         command = AdvanceCurriculumCommand(session_id=self.session_id)
         
         self.test_session.status = SessionStatus.ACTIVE
+        self.test_session.current_stage_index = 0
+        
+        # Set up curriculum plan with multiple stages
+        stage1 = CurriculumStage(
+            stage_id="stage1",
+            name="Foundation",
+            stage_type=StageType.FOUNDATION,
+            order=0
+        )
+        stage2 = CurriculumStage(
+            stage_id="stage2",
+            name="Walking",
+            stage_type=StageType.SKILL_BUILDING,
+            order=1
+        )
+        self.test_plan.stages = [stage1, stage2]
         
         # Mock curriculum service decision - not ready
         advancement_decision = AdvancementDecision(
@@ -433,6 +449,10 @@ class TestTrainingOrchestrator:
             plan_id=self.plan_id,
             session_name="Test Session"
         )
+        
+        # Set plan as active first to get past initial validation
+        self.test_plan.status = PlanStatus.ACTIVE
+        self.test_plan.stages = [Mock()]
         
         # Mock repository failure
         self.mock_session_repository.save.side_effect = RuntimeError("Database connection failed")

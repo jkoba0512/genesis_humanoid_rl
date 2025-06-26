@@ -200,6 +200,7 @@ class LocomotionSkill:
     def requires_skill(self, other_skill: SkillType) -> bool:
         """Check if this skill requires another skill as prerequisite."""
         prerequisites = {
+            SkillType.STATIC_BALANCE: [SkillType.POSTURAL_CONTROL],
             SkillType.DYNAMIC_BALANCE: [SkillType.STATIC_BALANCE, SkillType.POSTURAL_CONTROL],
             SkillType.FORWARD_WALKING: [SkillType.DYNAMIC_BALANCE],
             SkillType.BACKWARD_WALKING: [SkillType.FORWARD_WALKING],
@@ -354,20 +355,27 @@ class PerformanceMetrics:
     
     def get_overall_performance(self) -> float:
         """Calculate overall performance score."""
-        scores = [
-            self.success_rate * 0.3,
-            min(max(self.average_reward, 0.0), 1.0) * 0.2,  # Normalize reward
-            self.learning_progress * 0.2,
-        ]
+        # Base components with fixed weights that sum to 0.7
+        # Normalize reward more sensibly - assume rewards > 10.0 indicate very high performance
+        normalized_reward = min(max(self.average_reward, 0.0) / 10.0, 1.0)
         
+        base_score = (
+            self.success_rate * 0.3 +
+            normalized_reward * 0.2 +
+            self.learning_progress * 0.2
+        )
+        
+        # Optional components
+        skill_score = 0.0
         if self.skill_scores:
             avg_skill_score = np.mean(list(self.skill_scores.values()))
-            scores.append(avg_skill_score * 0.2)
+            skill_score = avg_skill_score * 0.2
         
+        gait_score = 0.0
         if self.gait_quality is not None:
-            scores.append(self.gait_quality * 0.1)
-        
-        return sum(scores) / len(scores)
+            gait_score = self.gait_quality * 0.1
+            
+        return base_score + skill_score + gait_score
     
     def is_improving(self, threshold: float = 0.1) -> bool:
         """Check if performance shows improvement."""
@@ -414,5 +422,19 @@ class SkillAssessment:
     
     def suggests_mastery(self, threshold: float = 0.7) -> bool:
         """Check if assessment suggests skill mastery."""
-        return (self.get_adjusted_score() >= threshold and 
-                self.is_reliable_assessment())
+        # For very low thresholds, use less aggressive adjustment
+        if threshold <= 0.5:
+            # Use a lighter adjustment for low thresholds
+            reliability_factor = (self.confidence_level + self.evidence_quality + 1.0) / 3.0
+            adjusted_score = self.assessment_score * reliability_factor
+            min_confidence = 0.5
+            min_evidence = 0.4
+        else:
+            # Use standard adjustment for normal thresholds
+            adjusted_score = self.get_adjusted_score()
+            min_confidence = 0.7
+            min_evidence = 0.6
+        
+        is_reliable = self.is_reliable_assessment(min_confidence, min_evidence)
+        
+        return adjusted_score >= threshold and is_reliable

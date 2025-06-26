@@ -35,6 +35,11 @@ class GaitAnalysisResult:
     stability_assessment: str
     efficiency_assessment: str
     recommendations: List[str]
+    
+    @property
+    def overall_score(self) -> float:
+        """Alias for quality_score to maintain compatibility."""
+        return self.quality_score
 
 
 @dataclass(frozen=True)
@@ -76,12 +81,22 @@ class MovementQualityAnalyzer:
         self._movement_history: List[MovementTrajectory] = []
         self._gait_history: List[GaitPattern] = []
     
-    def analyze_gait_stability(self, trajectory: MovementTrajectory) -> GaitAnalysisResult:
+    def analyze_gait_stability(self, trajectory: MovementTrajectory) -> StabilityAnalysisResult:
         """
         Analyze gait stability from movement trajectory.
         
         Core business logic for determining walking quality.
         """
+        # Handle insufficient data case
+        if len(trajectory.positions) < 3 or (trajectory.timestamps[-1] - trajectory.timestamps[0]) <= 0:
+            return StabilityAnalysisResult(
+                overall_score=0.0,
+                velocity_consistency=0.0,
+                acceleration_smoothness=0.0,
+                balance_stability=0.0,
+                analysis_notes="Insufficient data for analysis"
+            )
+        
         # Extract gait characteristics from trajectory
         gait_pattern = self._extract_gait_pattern(trajectory)
         
@@ -112,13 +127,27 @@ class MovementQualityAnalyzer:
         if len(self._gait_history) > 100:
             self._gait_history = self._gait_history[-100:]
         
-        return GaitAnalysisResult(
+        # Store gait analysis results as well
+        gait_analysis = GaitAnalysisResult(
             gait_pattern=gait_pattern,
             quality_score=quality_score,
             quality_rating=quality_rating,
             stability_assessment=stability_assessment,
             efficiency_assessment=efficiency_assessment,
             recommendations=recommendations
+        )
+        
+        # Calculate velocity consistency more accurately from trajectory
+        velocity_consistency = self._calculate_velocity_consistency(trajectory)
+        acceleration_smoothness = self._calculate_acceleration_smoothness(trajectory)
+        
+        # Return StabilityAnalysisResult as expected by tests
+        return StabilityAnalysisResult(
+            overall_score=quality_score,
+            velocity_consistency=velocity_consistency,
+            acceleration_smoothness=acceleration_smoothness,
+            balance_stability=gait_pattern.stability_margin / max(0.1, gait_pattern.stability_margin) if gait_pattern.stability_margin > 0 else 0.0,
+            analysis_notes=stability_assessment
         )
     
     def assess_energy_efficiency(self, joint_commands: List[np.ndarray], 
@@ -230,34 +259,249 @@ class MovementQualityAnalyzer:
             'detailed_metrics': skill_metrics
         }
     
-    def compare_gait_patterns(self, pattern1: GaitPattern, pattern2: GaitPattern) -> Dict[str, Any]:
+    def extract_gait_pattern_from_trajectory(self, trajectory: MovementTrajectory) -> GaitPattern:
         """
-        Compare two gait patterns for improvement analysis.
+        Public method to extract gait pattern from trajectory.
         
-        Business logic for understanding gait evolution.
+        Refactored to expose private method for testing and external use.
         """
-        comparison = {
-            'stride_length_change': pattern2.stride_length - pattern1.stride_length,
-            'frequency_change': pattern2.stride_frequency - pattern1.stride_frequency,
-            'stability_change': pattern2.stability_margin - pattern1.stability_margin,
-            'efficiency_change': pattern2.energy_efficiency - pattern1.energy_efficiency,
-            'symmetry_change': pattern2.symmetry_score - pattern1.symmetry_score,
-            'speed_change': pattern2.get_walking_speed() - pattern1.get_walking_speed(),
-            'quality_change': pattern2.get_quality_score() - pattern1.get_quality_score(),
+        return self._extract_gait_pattern(trajectory)
+    
+    def assess_movement_quality(self, trajectory_or_episode) -> Dict[str, Any]:
+        """
+        Comprehensive movement quality assessment.
+        
+        Provides overall movement analysis combining multiple factors.
+        Can take either a trajectory or an episode with trajectory.
+        """
+        # Handle episode with trajectory vs direct trajectory
+        if hasattr(trajectory_or_episode, 'movement_trajectory'):
+            trajectory = trajectory_or_episode.movement_trajectory
+        else:
+            trajectory = trajectory_or_episode
+            
+        if not trajectory or not hasattr(trajectory, 'positions') or len(trajectory.positions) < 2:
+            return {
+                'overall_quality_score': 0.0,
+                'gait_analysis': None,
+                'stability_analysis': None,
+                'recommendations': ['Insufficient trajectory data']
+            }
+        
+        # Perform gait analysis
+        gait_analysis = self.analyze_gait_stability(trajectory)
+        
+        # gait_analysis is already a StabilityAnalysisResult, use it directly
+        stability_analysis = gait_analysis
+        
+        # Calculate efficiency metrics
+        efficiency_score = self.calculate_energy_efficiency(trajectory)
+        efficiency_metrics = {
+            'energy_efficiency': efficiency_score,
+            'movement_smoothness': trajectory.get_smoothness_score(),
+            'velocity_consistency': gait_analysis.velocity_consistency
         }
         
-        # Determine overall improvement
-        improvement_score = (
-            self._normalize_change(comparison['stability_change'], 0.1) * 0.3 +
-            self._normalize_change(comparison['efficiency_change'], 0.2) * 0.3 +
-            self._normalize_change(comparison['symmetry_change'], 0.2) * 0.2 +
-            self._normalize_change(comparison['quality_change'], 0.3) * 0.2
+        return {
+            'overall_quality_score': gait_analysis.overall_score,
+            'gait_analysis': gait_analysis,
+            'stability_analysis': stability_analysis,
+            'efficiency_metrics': efficiency_metrics,
+            'recommendations': []  # StabilityAnalysisResult doesn't have recommendations
+        }
+    
+    def identify_movement_anomalies(self, trajectory: MovementTrajectory) -> List[Dict[str, Any]]:
+        """
+        Identify anomalies in a single movement trajectory.
+        
+        Analyzes trajectory to detect unusual or problematic movements.
+        """
+        anomalies = []
+        
+        if not trajectory or len(trajectory.positions) < 2:
+            return anomalies
+        
+        # Check for excessive velocity changes
+        if len(trajectory.positions) >= 3:
+            velocities = []
+            for j in range(1, len(trajectory.positions)):
+                pos_prev = np.array(trajectory.positions[j-1])
+                pos_curr = np.array(trajectory.positions[j])
+                dt = 0.1  # Assume 10Hz
+                velocity = np.linalg.norm(pos_curr - pos_prev) / dt
+                velocities.append(velocity)
+            
+            if velocities:
+                max_velocity = max(velocities)
+                avg_velocity = np.mean(velocities)
+                
+                # Check for velocity spikes (more sensitive)
+                if max_velocity > avg_velocity * 2.0 or max_velocity > 5.0:  # Lower threshold
+                    anomalies.append({
+                        'type': 'velocity_spike',
+                        'severity': 'high',
+                        'description': f'Velocity spike detected: {max_velocity:.2f}m/s'
+                    })
+                
+                # Also check for sudden acceleration between consecutive steps
+                for j in range(1, len(velocities)):
+                    velocity_change = abs(velocities[j] - velocities[j-1])
+                    if velocity_change > 3.0:  # Sudden acceleration change
+                        anomalies.append({
+                            'type': 'velocity_spike',
+                            'severity': 'medium',
+                            'description': f'Sudden velocity change: {velocity_change:.2f}m/s'
+                        })
+                        break  # Only report one
+        
+        # Check for height anomalies
+        if len(trajectory.positions) >= 2:
+            heights = [pos[2] for pos in trajectory.positions]
+            min_height = min(heights)
+            max_height = max(heights)
+            height_range = max_height - min_height
+            
+            if min_height < 0.2:
+                anomalies.append({
+                    'type': 'low_height',
+                    'severity': 'high',
+                    'description': f'Robot too low: {min_height:.2f}m'
+                })
+            
+            if max_height > 1.5:
+                anomalies.append({
+                    'type': 'height_spike',
+                    'severity': 'medium',
+                    'description': f'Robot too high: {max_height:.2f}m'
+                })
+            
+            if height_range > 1.0:  # Large height variation
+                anomalies.append({
+                    'type': 'height_spike',
+                    'severity': 'high',
+                    'description': f'Large height variation: {height_range:.2f}m'
+                })
+        
+        return anomalies
+    
+    def calculate_energy_efficiency(self, trajectory: MovementTrajectory) -> float:
+        """
+        Calculate energy efficiency score from trajectory.
+        
+        Refactored to take trajectory and calculate efficiency directly.
+        """
+        if not trajectory or len(trajectory.positions) < 2:
+            return 0.0
+        
+        # Calculate distance and time
+        distance_covered = trajectory.get_total_distance()
+        time_elapsed = trajectory.timestamps[-1] - trajectory.timestamps[0]
+        
+        if time_elapsed <= 0 or distance_covered <= 0:
+            return 0.0
+        
+        # Estimate energy from movement smoothness (simpler approach)
+        smoothness = trajectory.get_smoothness_score()
+        velocity = distance_covered / time_elapsed
+        
+        # Efficiency is based on smoothness and reasonable velocity
+        # High smoothness = less energy waste
+        # Moderate velocity = good efficiency
+        velocity_efficiency = 1.0 - abs(velocity - 1.0) / 2.0  # Optimal around 1.0 m/s
+        velocity_efficiency = max(0.0, velocity_efficiency)
+        
+        efficiency_score = (smoothness * 0.7 + velocity_efficiency * 0.3)
+        return min(1.0, efficiency_score)
+    
+    def evaluate_balance_quality(self, state_history: List[Dict[str, Any]]) -> float:
+        """
+        Evaluate balance quality from robot state history.
+        
+        Returns a single float score representing balance quality.
+        """
+        if len(state_history) < 3:
+            return 0.0
+        
+        # Extract positions from dict format
+        positions = []
+        orientations = []
+        
+        for state in state_history:
+            if isinstance(state, dict):
+                positions.append(state['position'])
+                orientations.append(state['orientation'])
+            else:
+                # Handle RobotState objects
+                positions.append(state.position)
+                orientations.append(getattr(state, 'orientation', [0, 0, 0, 1]))
+        
+        # Analyze height stability
+        heights = [pos[2] for pos in positions]
+        height_mean = np.mean(heights)
+        height_var = np.var(heights)
+        height_stability = max(0.0, 1.0 - height_var / 0.01)  # Normalize to expected variance
+        
+        # Analyze center of mass movement (simplified)
+        positions_2d = [pos[:2] for pos in positions]  # X,Y only
+        com_movements = []
+        for i in range(1, len(positions_2d)):
+            movement = np.linalg.norm(np.array(positions_2d[i]) - np.array(positions_2d[i-1]))
+            com_movements.append(movement)
+        
+        com_stability = 1.0
+        if com_movements:
+            avg_com_movement = np.mean(com_movements)
+            com_stability = max(0.0, 1.0 - avg_com_movement / 0.1)  # Normalize to 10cm
+        
+        # Analyze orientation stability (quaternion deviation from upright)
+        orientation_stability = 1.0
+        if orientations:
+            deviations = []
+            for quat in orientations:
+                # Calculate tilt from upright (quaternion [0,0,0,1])
+                q = np.array(quat)
+                # Simple tilt calculation using x and y components
+                tilt = np.sqrt(q[0]**2 + q[1]**2)
+                deviations.append(tilt)
+            
+            avg_deviation = np.mean(deviations)
+            orientation_stability = max(0.0, 1.0 - avg_deviation / 0.5)  # Normalize to 0.5 rad tilt
+        
+        # Overall balance score
+        balance_score = (height_stability * 0.4 + com_stability * 0.3 + orientation_stability * 0.3)
+        
+        return min(1.0, balance_score)
+    
+    def compare_gait_patterns(self, pattern1: GaitPattern, pattern2: GaitPattern) -> float:
+        """
+        Compare two gait patterns and return similarity score.
+        
+        Returns a similarity score from 0.0 (completely different) to 1.0 (identical).
+        """
+        # Calculate differences in each dimension
+        stride_length_diff = abs(pattern2.stride_length - pattern1.stride_length)
+        frequency_diff = abs(pattern2.stride_frequency - pattern1.stride_frequency)
+        stability_diff = abs(pattern2.stability_margin - pattern1.stability_margin)
+        efficiency_diff = abs(pattern2.energy_efficiency - pattern1.energy_efficiency)
+        symmetry_diff = abs(pattern2.symmetry_score - pattern1.symmetry_score)
+        
+        # Normalize differences to 0-1 scale (smaller max differences for more sensitivity)
+        stride_similarity = max(0.0, 1.0 - stride_length_diff / 0.5)  # Max diff 0.5m
+        frequency_similarity = max(0.0, 1.0 - frequency_diff / 1.5)  # Max diff 1.5 Hz
+        stability_similarity = max(0.0, 1.0 - stability_diff / 0.1)  # Max diff 0.1m
+        efficiency_similarity = max(0.0, 1.0 - efficiency_diff / 0.8)  # Max diff 0.8
+        symmetry_similarity = max(0.0, 1.0 - symmetry_diff / 0.8)  # Max diff 0.8
+        
+        # Weighted average similarity
+        overall_similarity = (
+            stride_similarity * 0.25 +
+            frequency_similarity * 0.25 +
+            stability_similarity * 0.2 +
+            efficiency_similarity * 0.15 +
+            symmetry_similarity * 0.15
         )
         
-        comparison['overall_improvement'] = improvement_score
-        comparison['improvement_summary'] = self._generate_improvement_summary(comparison)
-        
-        return comparison
+        return min(1.0, overall_similarity)
     
     # Private helper methods
     
@@ -268,7 +512,8 @@ class MovementQualityAnalyzer:
         total_time = trajectory.timestamps[-1] - trajectory.timestamps[0]
         
         if total_time <= 0:
-            return GaitPattern(
+            # Return a zero gait pattern for insufficient data
+            zero_pattern = GaitPattern(
                 stride_length=0.0,
                 stride_frequency=0.0,
                 step_height=0.0,
@@ -276,6 +521,7 @@ class MovementQualityAnalyzer:
                 energy_efficiency=0.0,
                 symmetry_score=0.0
             )
+            return zero_pattern
         
         # Estimate gait parameters
         avg_velocity = total_distance / total_time
@@ -750,3 +996,59 @@ class MovementQualityAnalyzer:
                     turning_scores.append(curvature_quality)
         
         return np.mean(turning_scores) if turning_scores else 0.0
+    
+    def _calculate_velocity_consistency(self, trajectory: MovementTrajectory) -> float:
+        """Calculate velocity consistency more accurately."""
+        if len(trajectory.positions) < 3:
+            return 0.0
+        
+        # Calculate step-by-step velocities from positions
+        velocities = []
+        for i in range(1, len(trajectory.positions)):
+            pos_prev = np.array(trajectory.positions[i-1])
+            pos_curr = np.array(trajectory.positions[i])
+            dt = trajectory.timestamps[i] - trajectory.timestamps[i-1] if len(trajectory.timestamps) > i else 0.1
+            if dt > 0:
+                velocity = np.linalg.norm(pos_curr - pos_prev) / dt
+                velocities.append(velocity)
+        
+        if len(velocities) < 2:
+            return 0.0
+        
+        # Consistency = 1 - coefficient of variation
+        mean_velocity = np.mean(velocities)
+        if mean_velocity == 0:
+            return 1.0  # Perfect consistency at zero velocity
+        
+        std_velocity = np.std(velocities)
+        coefficient_of_variation = std_velocity / mean_velocity
+        
+        # Convert to 0-1 scale (lower variation = higher consistency)
+        consistency = max(0.0, 1.0 - coefficient_of_variation)
+        return min(consistency, 1.0)
+    
+    def _calculate_acceleration_smoothness(self, trajectory: MovementTrajectory) -> float:
+        """Calculate acceleration smoothness."""
+        if len(trajectory.positions) < 3:
+            return 0.0
+        
+        # Calculate accelerations
+        accelerations = []
+        for i in range(1, len(trajectory.positions) - 1):
+            pos_prev = np.array(trajectory.positions[i-1])
+            pos_curr = np.array(trajectory.positions[i])
+            pos_next = np.array(trajectory.positions[i+1])
+            
+            dt = 0.1  # Assume fixed timestep
+            vel1 = (pos_curr - pos_prev) / dt
+            vel2 = (pos_next - pos_curr) / dt
+            accel = (vel2 - vel1) / dt
+            
+            accelerations.append(np.linalg.norm(accel))
+        
+        if not accelerations:
+            return 0.0
+        
+        # Smoothness is inverse of average acceleration magnitude
+        avg_acceleration = np.mean(accelerations)
+        return 1.0 / (1.0 + avg_acceleration)

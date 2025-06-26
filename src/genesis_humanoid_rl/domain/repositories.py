@@ -24,6 +24,10 @@ class LearningSessionRepository(ABC):
         """Find session by ID."""
         pass
     
+    def get_by_id(self, session_id: SessionId) -> Optional[LearningSession]:
+        """Get session by ID (alias for find_by_id)."""
+        return self.find_by_id(session_id)
+    
     @abstractmethod
     def find_active_sessions(self) -> List[LearningSession]:
         """Find all active learning sessions."""
@@ -55,6 +59,10 @@ class HumanoidRobotRepository(ABC):
         """Find robot by ID."""
         pass
     
+    def get_by_id(self, robot_id: RobotId) -> Optional[HumanoidRobot]:
+        """Get robot by ID (alias for find_by_id)."""
+        return self.find_by_id(robot_id)
+    
     @abstractmethod
     def find_all(self) -> List[HumanoidRobot]:
         """Find all robots."""
@@ -79,6 +87,10 @@ class CurriculumPlanRepository(ABC):
     def find_by_id(self, plan_id: PlanId) -> Optional[CurriculumPlan]:
         """Find plan by ID."""
         pass
+    
+    def get_by_id(self, plan_id: PlanId) -> Optional[CurriculumPlan]:
+        """Get plan by ID (alias for find_by_id)."""
+        return self.find_by_id(plan_id)
     
     @abstractmethod
     def find_active_plans(self) -> List[CurriculumPlan]:

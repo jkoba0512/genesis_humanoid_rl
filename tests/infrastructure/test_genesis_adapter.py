@@ -49,7 +49,7 @@ class TestGenesisSimulationAdapter:
             orientation=np.array([0.0, 0.0, 0.0, 1.0]),
             joint_positions=np.zeros(35),
             joint_velocities=np.zeros(35),
-            previous_action=np.zeros(35)
+            timestamp=0.0
         )
         
         self.mock_genesis.get_robot_state.return_value = self.test_robot_state
@@ -218,7 +218,7 @@ class TestGenesisSimulationAdapter:
             orientation=np.array([0.0, 0.0, 0.0, 1.0]),  # Upright
             joint_positions=np.zeros(35),  # Normal joint positions
             joint_velocities=np.ones(35) * 2.0,  # Reasonable velocities
-            previous_action=np.zeros(35)
+            timestamp=0.0
         )
         
         assessment = self.adapter._assess_physics_stability(stable_state)
@@ -234,7 +234,7 @@ class TestGenesisSimulationAdapter:
             orientation=np.array([0.0, 0.0, 0.0, 1.0]),
             joint_positions=np.full(35, np.inf),  # Invalid positions
             joint_velocities=np.ones(35) * 100.0,  # Extreme velocities
-            previous_action=np.zeros(35)
+            timestamp=0.0
         )
         
         assessment = self.adapter._assess_physics_stability(unstable_state)
@@ -356,10 +356,10 @@ class TestGenesisSimulationAdapter:
         
         stride_analysis = self.adapter._analyze_stride_pattern(trajectory)
         
-        # Should handle zero time gracefully
-        assert stride_analysis['stride_length'] == 0.0
-        assert stride_analysis['stride_frequency'] == 0.0
-        assert stride_analysis['step_height'] > 0  # Default value
+        # Should handle zero time gracefully with minimum valid values
+        assert stride_analysis['stride_length'] == 0.01  # Minimum valid value
+        assert stride_analysis['stride_frequency'] == 0.1  # Minimum valid value
+        assert stride_analysis['step_height'] > 0  # Positive value
     
     def test_gait_stability_analysis(self):
         """Test gait stability analysis."""

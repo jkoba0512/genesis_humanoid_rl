@@ -81,9 +81,19 @@ class CurriculumProgressionService:
             remaining_requirements.append('success_rate')
         
         # Check skill mastery
-        all_skills_mastered = all(
-            stage.is_skill_mastered(skill) for skill in stage.target_skills
-        )
+        try:
+            target_skills = getattr(stage, 'target_skills', set())
+            if not target_skills:
+                # No target skills means mastery requirement is automatically met
+                all_skills_mastered = True
+            else:
+                all_skills_mastered = all(
+                    stage.is_skill_mastered(skill) for skill in target_skills
+                )
+        except (AttributeError, TypeError) as e:
+            logger.warning(f"Error checking skill mastery: {e}")
+            all_skills_mastered = False
+            
         if all_skills_mastered:
             success_criteria_met.append('skill_mastery')
         else:
