@@ -1,0 +1,35 @@
+{
+  "system_info": {
+    "cpu_count": 16,
+    "cpu_freq": {
+      "current": 2538.5815,
+      "min": 800.0,
+      "max": 4825.0
+    },
+    "memory_total_gb": 31.178878784179688,
+    "memory_available_gb": 29.11965560913086,
+    "disk_usage": {
+      "total_gb": 911.1156196594238,
+      "free_gb": 628.889087677002
+    },
+    "python_version": "3.10.18 (main, Jun 12 2025, 12:39:39) [Clang 20.1.4 ]",
+    "platform": "linux",
+    "timestamp": "2025-06-27T09:35:23.363270"
+  },
+  "test_results": {
+    "test_simple_uow_performance.py": {
+      "status": "failed",
+      "duration": 1.0612585544586182,
+      "return_code": 4,
+      "stdout": "",
+      "stderr": "ERROR: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]\n__main__.py: error: unrecognized arguments: --json-report --json-report-file=test_simple_uow_performance_report.json\n  inifile: /home/jkoba/SynologyDrive/genesis_humanoid_rl/pyproject.toml\n  rootdir: /home/jkoba/SynologyDrive/genesis_humanoid_rl\n\n",
+      "tests": []
+    }
+  },
+  "summary": {
+    "total_test_files": 1,
+    "total_duration": 1.0612585544586182,
+    "passed_files": 0,
+    "failed_files": 1
+  }
+}

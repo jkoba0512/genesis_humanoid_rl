@@ -1,0 +1,35 @@
+{
+  "system_info": {
+    "cpu_count": 16,
+    "cpu_freq": {
+      "current": 2269.4276875,
+      "min": 800.0,
+      "max": 4825.0
+    },
+    "memory_total_gb": 31.178878784179688,
+    "memory_available_gb": 29.234188079833984,
+    "disk_usage": {
+      "total_gb": 911.1156196594238,
+      "free_gb": 628.8890800476074
+    },
+    "python_version": "3.10.18 (main, Jun 12 2025, 12:39:39) [Clang 20.1.4 ]",
+    "platform": "linux",
+    "timestamp": "2025-06-27T09:35:59.453760"
+  },
+  "test_results": {
+    "test_simple_uow_performance.py": {
+      "status": "passed",
+      "duration": 1.4622609615325928,
+      "return_code": 0,
+      "stdout": "....                                                                     [100%]\n4 passed in 0.28s\n",
+      "stderr": "",
+      "tests": []
+    }
+  },
+  "summary": {
+    "total_test_files": 1,
+    "total_duration": 1.4622609615325928,
+    "passed_files": 1,
+    "failed_files": 0
+  }
+}

@@ -287,7 +287,8 @@ class TestCurriculumProgressionService:
         """Test advancement evaluation when robot is ready."""
         # Set up stage to meet all criteria
         self.stage.get_success_rate.return_value = 0.8  # Above target
-        self.stage.is_skill_mastered.return_value = True  # All skills mastered
+        # Mock is_skill_mastered to accept skill parameter and return True for all skills
+        self.stage.is_skill_mastered.side_effect = lambda skill, level=MasteryLevel.INTERMEDIATE: True
         
         decision = self.service.evaluate_advancement_readiness(
             self.robot, self.stage, self.recent_episodes

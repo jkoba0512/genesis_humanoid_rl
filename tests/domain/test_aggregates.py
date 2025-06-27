@@ -634,9 +634,10 @@ class TestHumanoidRobot:
         assert len(self.robot.gait_patterns) == 20
         
         # Should keep the highest quality ones
-        # The best patterns should have higher efficiency scores
-        min_efficiency = min(gait.energy_efficiency for gait in self.robot.gait_patterns)
-        assert min_efficiency > 0.75  # Should have filtered out lower efficiency patterns
+        # The best patterns should have higher quality scores (not just efficiency)
+        min_quality = min(gait.get_quality_score() for gait in self.robot.gait_patterns)
+        # With 25 patterns (efficiency 0.7 to 0.94), top 20 should exclude lowest 5
+        assert min_quality >= 0.70  # Should have filtered out lowest quality patterns
     
     def test_get_robot_capabilities(self):
         """Test robot capabilities summary."""

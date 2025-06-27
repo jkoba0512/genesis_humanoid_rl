@@ -1,0 +1,163 @@
+# Performance Test Configuration
+# Configure various aspects of performance testing
+
+# Test execution settings
+execution:
+  # Maximum time to run each test (seconds)
+  max_test_duration: 300
+  
+  # Number of test iterations for stability
+  test_iterations: 1
+  
+  # Whether to run tests in parallel
+  parallel_execution: false
+  
+  # Maximum number of parallel workers
+  max_workers: 4
+
+# Resource limits for testing
+resource_limits:
+  # Maximum memory usage (MB) before test failure
+  max_memory_mb: 4000
+  
+  # Maximum CPU usage (%) threshold
+  max_cpu_percent: 300
+  
+  # Maximum open file descriptors
+  max_open_files: 1000
+  
+  # Maximum test database size (MB)
+  max_db_size_mb: 1000
+
+# Performance thresholds for assertions
+thresholds:
+  # Transaction performance
+  max_avg_transaction_time: 1.0
+  max_p95_transaction_time: 5.0
+  max_p99_transaction_time: 10.0
+  
+  # Query performance
+  max_avg_query_time: 0.5
+  max_single_query_time: 2.0
+  
+  # Concurrency performance
+  min_operations_per_second: 10
+  max_deadlock_rate: 0.2
+  max_error_rate: 0.1
+  
+  # Memory performance
+  max_memory_growth_mb: 500
+  max_memory_variance: 10000
+  
+  # Serialization performance
+  max_serialization_time_per_object: 0.1
+  max_deserialization_time_per_object: 0.05
+
+# Test data configuration
+test_data:
+  # High-volume transaction test
+  high_volume_transactions:
+    num_transactions: 150
+    num_threads: 10
+    
+  # Large dataset test
+  large_dataset:
+    num_records: 1200
+    batch_size: 50
+    
+  # Memory usage test
+  memory_test:
+    num_operations: 500
+    episodes_per_session: 10
+    
+  # Deadlock scenario test
+  deadlock_test:
+    num_threads: 8
+    operations_per_thread: 25
+    shared_resource_count: 10
+    
+  # Training scenario tests
+  training_scenarios:
+    multi_robot_training:
+      num_robots: 20
+      num_plans: 5
+      episodes_per_session: 50
+      
+    skill_assessment:
+      num_robots: 10
+      assessments_per_robot: 100
+      
+    curriculum_progression:
+      num_plans: 15
+      progression_cycles: 10
+      
+    mixed_workload:
+      num_robots: 15
+      num_plans: 8
+      num_workers: 12
+
+# Bottleneck test configuration
+bottleneck_tests:
+  memory_exhaustion:
+    max_iterations: 50
+    batch_size: 100
+    memory_threshold_mb: 1500
+    
+  connection_pool:
+    max_concurrent_connections: 50
+    operations_per_connection: 10
+    
+  serialization:
+    num_objects: 1000
+    assessments_per_skill: 100
+    
+  concurrent_writes:
+    num_writers: 20
+    writes_per_writer: 50
+    shared_resource_count: 10
+
+# Monitoring configuration
+monitoring:
+  # Resource monitoring interval (seconds)
+  monitoring_interval: 0.1
+  
+  # Whether to collect detailed I/O statistics
+  collect_io_stats: true
+  
+  # Whether to collect CPU usage per core
+  collect_per_core_cpu: false
+  
+  # Memory sampling frequency
+  memory_sampling_frequency: 0.2
+
+# Reporting configuration
+reporting:
+  # Output formats to generate
+  formats:
+    - markdown
+    - json
+    
+  # Whether to include system information
+  include_system_info: true
+  
+  # Whether to include detailed test logs
+  include_test_logs: false
+  
+  # Performance chart generation
+  generate_charts: false
+  
+  # Report sections to include
+  sections:
+    - summary
+    - detailed_results
+    - performance_insights
+    - recommendations
+    - bottleneck_analysis
+
+# Alert thresholds for critical issues
+alerts:
+  critical_memory_usage_mb: 3000
+  critical_cpu_usage_percent: 400
+  critical_transaction_time: 15.0
+  critical_deadlock_rate: 0.5
+  critical_error_rate: 0.3

@@ -56,6 +56,11 @@ class PlanId:
     def generate(cls) -> 'PlanId':
         """Generate a new unique plan ID."""
         return cls(str(uuid.uuid4()))
+    
+    @classmethod
+    def from_string(cls, value: str) -> 'PlanId':
+        """Create PlanId from string."""
+        return cls(value)
 
 
 @dataclass(frozen=True)
@@ -67,6 +72,11 @@ class EpisodeId:
     def generate(cls) -> 'EpisodeId':
         """Generate a new unique episode ID."""
         return cls(str(uuid.uuid4()))
+    
+    @classmethod
+    def from_string(cls, value: str) -> 'EpisodeId':
+        """Create EpisodeId from string."""
+        return cls(value)
 
 
 # Motion and behavior value objects
@@ -438,3 +448,89 @@ class SkillAssessment:
         is_reliable = self.is_reliable_assessment(min_confidence, min_evidence)
         
         return adjusted_score >= threshold and is_reliable
+
+
+@dataclass(frozen=True)
+class DifficultyParameters:
+    """Parameters for controlling training difficulty."""
+    
+    base_difficulty: float = 1.0
+    progression_rate: float = 0.1
+    adaptation_threshold: float = 0.8
+    max_difficulty: float = 5.0
+    min_difficulty: float = 0.1
+    
+    def __post_init__(self):
+        """Validate difficulty parameters."""
+        if not (0.0 <= self.base_difficulty <= 10.0):
+            raise ValueError("base_difficulty must be between 0.0 and 10.0")
+        if not (0.0 <= self.progression_rate <= 1.0):
+            raise ValueError("progression_rate must be between 0.0 and 1.0")
+        if self.min_difficulty >= self.max_difficulty:
+            raise ValueError("min_difficulty must be less than max_difficulty")
+    
+    def calculate_adapted_difficulty(self, performance_score: float) -> float:
+        """Calculate adapted difficulty based on performance."""
+        if performance_score > self.adaptation_threshold:
+            # Increase difficulty
+            new_difficulty = self.base_difficulty * (1 + self.progression_rate)
+        else:
+            # Decrease difficulty
+            new_difficulty = self.base_difficulty * (1 - self.progression_rate)
+        
+        # Clamp to valid range
+        return max(self.min_difficulty, min(self.max_difficulty, new_difficulty))
+    
+    def get_complexity_multiplier(self) -> float:
+        """Get complexity multiplier based on difficulty."""
+        return 0.5 + (self.base_difficulty / self.max_difficulty) * 1.5
+
+
+@dataclass(frozen=True)
+class RobotConfiguration:
+    """Configuration parameters for humanoid robots."""
+    
+    joint_count: int
+    height: float
+    weight: float
+    max_joint_velocity: float = 10.0
+    max_joint_torque: float = 100.0
+    control_frequency: int = 20
+    simulation_frequency: int = 100
+    
+    def __post_init__(self):
+        """Validate robot configuration."""
+        if self.joint_count <= 0:
+            raise ValueError("joint_count must be positive")
+        if self.height <= 0:
+            raise ValueError("height must be positive")
+        if self.weight <= 0:
+            raise ValueError("weight must be positive")
+        if self.max_joint_velocity <= 0:
+            raise ValueError("max_joint_velocity must be positive")
+        if self.max_joint_torque <= 0:
+            raise ValueError("max_joint_torque must be positive")
+        if self.control_frequency <= 0:
+            raise ValueError("control_frequency must be positive")
+        if self.simulation_frequency <= 0:
+            raise ValueError("simulation_frequency must be positive")
+    
+    def get_control_timestep(self) -> float:
+        """Get control timestep in seconds."""
+        return 1.0 / self.control_frequency
+    
+    def get_simulation_timestep(self) -> float:
+        """Get simulation timestep in seconds."""
+        return 1.0 / self.simulation_frequency
+    
+    def get_action_space_size(self) -> int:
+        """Get action space size for RL."""
+        return self.joint_count
+    
+    def validate_action(self, action: np.ndarray) -> bool:
+        """Validate if action is within robot limits."""
+        if len(action) != self.joint_count:
+            return False
+        
+        # Check if action values are within velocity limits
+        return np.all(np.abs(action) <= self.max_joint_velocity)

@@ -368,7 +368,7 @@ class TestCurriculumStage:
             session_id=SessionId.generate(),
             target_skill=SkillType.STATIC_BALANCE
         )
-        episode.start_episode()
+        episode.start_episode(SkillType.STATIC_BALANCE)
         
         # Set up performance metrics with skill score
         performance_metrics = PerformanceMetrics(

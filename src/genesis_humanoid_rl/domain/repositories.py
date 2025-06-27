@@ -6,9 +6,19 @@ Define contracts for data access without implementation details.
 from abc import ABC, abstractmethod
 from typing import List, Optional, Dict, Any
 from datetime import datetime
+from dataclasses import dataclass
 
 from .model.value_objects import SessionId, RobotId, PlanId, SkillType
 from .model.aggregates import LearningSession, HumanoidRobot, CurriculumPlan
+
+
+@dataclass
+class DomainEvent:
+    """Domain event for event sourcing."""
+    event_type: str
+    aggregate_id: str
+    payload: Dict[str, Any]
+    occurred_at: float
 
 
 class LearningSessionRepository(ABC):
@@ -23,10 +33,6 @@ class LearningSessionRepository(ABC):
     def find_by_id(self, session_id: SessionId) -> Optional[LearningSession]:
         """Find session by ID."""
         pass
-    
-    def get_by_id(self, session_id: SessionId) -> Optional[LearningSession]:
-        """Get session by ID (alias for find_by_id)."""
-        return self.find_by_id(session_id)
     
     @abstractmethod
     def find_active_sessions(self) -> List[LearningSession]:
@@ -59,10 +65,6 @@ class HumanoidRobotRepository(ABC):
         """Find robot by ID."""
         pass
     
-    def get_by_id(self, robot_id: RobotId) -> Optional[HumanoidRobot]:
-        """Get robot by ID (alias for find_by_id)."""
-        return self.find_by_id(robot_id)
-    
     @abstractmethod
     def find_all(self) -> List[HumanoidRobot]:
         """Find all robots."""
@@ -88,10 +90,6 @@ class CurriculumPlanRepository(ABC):
         """Find plan by ID."""
         pass
     
-    def get_by_id(self, plan_id: PlanId) -> Optional[CurriculumPlan]:
-        """Get plan by ID (alias for find_by_id)."""
-        return self.find_by_id(plan_id)
-    
     @abstractmethod
     def find_active_plans(self) -> List[CurriculumPlan]:
         """Find all active curriculum plans."""
@@ -107,21 +105,21 @@ class DomainEventRepository(ABC):
     """Repository interface for domain event persistence."""
     
     @abstractmethod
-    def save_event(self, event: Any) -> None:
+    def save(self, event: DomainEvent) -> None:
         """Save a domain event."""
         pass
     
     @abstractmethod
-    def find_events_by_aggregate(self, aggregate_id: str) -> List[Any]:
+    def find_by_aggregate(self, aggregate_id: str) -> List[DomainEvent]:
         """Find events for specific aggregate."""
         pass
     
     @abstractmethod
-    def find_events_by_type(self, event_type: str) -> List[Any]:
+    def find_by_type(self, event_type: str, limit: int = 100) -> List[DomainEvent]:
         """Find events of specific type."""
         pass
     
     @abstractmethod
-    def find_recent_events(self, limit: int = 100) -> List[Any]:
+    def find_recent_events(self, limit: int = 100) -> List[DomainEvent]:
         """Find recent events."""
         pass

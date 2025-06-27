@@ -1,6 +1,8 @@
 """
 Test configuration and fixtures for genesis_humanoid_rl.
-Provides mocked Genesis dependencies for unit testing.
+
+Provides comprehensive test infrastructure with fixtures, context managers,
+and utilities for all layers of the application.
 """
 
 import pytest
@@ -10,10 +12,16 @@ import torch
 from typing import Any, Dict, Optional
 from dataclasses import dataclass
 
+# Import all fixture modules
+from tests.fixtures.database_fixtures import *
+from tests.fixtures.domain_fixtures import *
+from tests.fixtures.simulation_fixtures import *
 
+
+# Backward compatibility - maintain existing fixtures
 @dataclass
 class MockRobotState:
-    """Mock robot state for testing."""
+    """Mock robot state for testing (legacy compatibility)."""
     position: np.ndarray
     orientation: np.ndarray  # quaternion
     joint_positions: np.ndarray
@@ -178,7 +186,7 @@ def mock_physics_manager():
     return MockPhysicsManager()
 
 
-# Test utilities
+# Test utilities - maintain backward compatibility
 def assert_valid_observation(obs: np.ndarray, expected_size: int = 113):
     """Assert that observation has valid structure."""
     assert isinstance(obs, np.ndarray)
@@ -210,3 +218,45 @@ def benchmark_config():
         'target_fps': 50,
         'memory_limit_mb': 1000,
     }
+
+
+# Pytest configuration
+def pytest_configure(config):
+    """Configure pytest with custom markers."""
+    config.addinivalue_line(
+        "markers", "unit: marks tests as unit tests (fast, isolated)"
+    )
+    config.addinivalue_line(
+        "markers", "integration: marks tests as integration tests (slower, with dependencies)"
+    )
+    config.addinivalue_line(
+        "markers", "performance: marks tests as performance benchmarks"
+    )
+    config.addinivalue_line(
+        "markers", "slow: marks tests as slow running"
+    )
+    config.addinivalue_line(
+        "markers", "database: marks tests that require database"
+    )
+    config.addinivalue_line(
+        "markers", "simulation: marks tests that require physics simulation"
+    )
+
+
+# Session-level fixtures for expensive setup
+@pytest.fixture(scope="session")
+def shared_test_database():
+    """Session-scoped database for tests that can share data."""
+    with temporary_database("shared_test.db") as db_path:
+        with database_connection(db_path) as db:
+            # Initialize with common test data
+            yield db
+
+
+# Automatic cleanup fixtures
+@pytest.fixture(autouse=True)
+def cleanup_environment():
+    """Automatically clean up environment after each test."""
+    yield
+    # Cleanup code here - clear any global state, close connections, etc.
+    pass

@@ -19,6 +19,7 @@ from src.genesis_humanoid_rl.domain.model.aggregates import (
     LearningSession, SessionStatus, HumanoidRobot, RobotType, CurriculumPlan, PlanStatus
 )
 from src.genesis_humanoid_rl.domain.services.curriculum_service import AdvancementDecision
+from src.genesis_humanoid_rl.domain.services.motion_planning_service import MotionPlanningService
 from src.genesis_humanoid_rl.application.commands import (
     StartTrainingSessionCommand, ExecuteEpisodeCommand, AdvanceCurriculumCommand
 )
@@ -33,6 +34,7 @@ class TestTrainingOrchestrator:
         self.mock_genesis_adapter = Mock()
         self.mock_movement_analyzer = Mock()
         self.mock_curriculum_service = Mock()
+        self.mock_motion_planning_service = Mock()
         self.mock_session_repository = Mock()
         self.mock_robot_repository = Mock()
         self.mock_plan_repository = Mock()
@@ -46,7 +48,8 @@ class TestTrainingOrchestrator:
             session_repository=self.mock_session_repository,
             robot_repository=self.mock_robot_repository,
             plan_repository=self.mock_plan_repository,
-            event_publisher=self.mock_event_publisher
+            event_publisher=self.mock_event_publisher,
+            motion_planning_service=self.mock_motion_planning_service
         )
         
         # Create test entities
@@ -77,11 +80,22 @@ class TestTrainingOrchestrator:
             robot_type=RobotType.UNITREE_G1,
             description="Test curriculum plan"
         )
+        # Set plan to ACTIVE by default (most tests need active plans)
+        self.test_plan.status = PlanStatus.ACTIVE
         
         # Set up repository responses
-        self.mock_robot_repository.get_by_id.return_value = self.test_robot
-        self.mock_session_repository.get_by_id.return_value = self.test_session
-        self.mock_plan_repository.get_by_id.return_value = self.test_plan
+        self.mock_robot_repository.find_by_id.return_value = self.test_robot
+        self.mock_session_repository.find_by_id.return_value = self.test_session
+        self.mock_plan_repository.find_by_id.return_value = self.test_plan
+        
+        # Set up motion planning service response
+        from src.genesis_humanoid_rl.domain.model.value_objects import MotionCommand, MotionType
+        mock_motion_command = MotionCommand(
+            motion_type=MotionType.WALK_FORWARD,
+            velocity=1.0,
+            duration=2.0
+        )
+        self.mock_motion_planning_service.create_motion_command.return_value = mock_motion_command
     
     def test_start_training_session_successful(self):
         """Test successful training session start."""
@@ -110,7 +124,6 @@ class TestTrainingOrchestrator:
             order=0
         )
         self.test_plan.stages = [stage]
-        self.test_plan.status = PlanStatus.ACTIVE
         
         result = self.orchestrator.start_training_session(command)
         
@@ -119,8 +132,8 @@ class TestTrainingOrchestrator:
         assert result['status'] == 'started'
         
         # Verify repositories were called
-        self.mock_robot_repository.get_by_id.assert_called_once_with(self.robot_id)
-        self.mock_plan_repository.get_by_id.assert_called_once_with(self.plan_id)
+        self.mock_robot_repository.find_by_id.assert_called_once_with(self.robot_id)
+        self.mock_plan_repository.find_by_id.assert_called_once_with(self.plan_id)
         self.mock_session_repository.save.assert_called_once()
         
         # Verify event was published
@@ -135,7 +148,7 @@ class TestTrainingOrchestrator:
         )
         
         # Mock robot not found
-        self.mock_robot_repository.get_by_id.return_value = None
+        self.mock_robot_repository.find_by_id.return_value = None
         
         result = self.orchestrator.start_training_session(command)
         
@@ -407,7 +420,7 @@ class TestTrainingOrchestrator:
     def test_get_training_progress_session_not_found(self):
         """Test training progress retrieval when session not found."""
         # Mock session not found
-        self.mock_session_repository.get_by_id.return_value = None
+        self.mock_session_repository.find_by_id.return_value = None
         
         progress = self.orchestrator.get_training_progress(self.session_id)
         
@@ -535,7 +548,7 @@ class TestTrainingOrchestrator:
         
         # Execute episode
         session_id = SessionId.from_string(start_result['session_id'])
-        self.mock_session_repository.get_by_id.return_value = new_session
+        self.mock_session_repository.find_by_id.return_value = new_session
         new_session.status = SessionStatus.ACTIVE
         
         episode_command = ExecuteEpisodeCommand(

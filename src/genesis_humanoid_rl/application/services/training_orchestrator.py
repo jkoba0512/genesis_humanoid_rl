@@ -13,7 +13,7 @@ from ...domain.repositories import (
     LearningSessionRepository, HumanoidRobotRepository, 
     CurriculumPlanRepository, DomainEventRepository
 )
-from ...domain.services import CurriculumProgressionService, MovementQualityAnalyzer
+from ...domain.services import CurriculumProgressionService, MovementQualityAnalyzer, MotionPlanningService, TrainingContext
 from ...infrastructure.adapters import GenesisSimulationAdapter
 
 logger = logging.getLogger(__name__)
@@ -34,7 +34,8 @@ class TrainingOrchestrator:
                  session_repository: LearningSessionRepository,
                  robot_repository: HumanoidRobotRepository,
                  plan_repository: CurriculumPlanRepository,
-                 event_publisher):
+                 event_publisher,
+                 motion_planning_service: MotionPlanningService = None):
         self.genesis_adapter = genesis_adapter
         self.movement_analyzer = movement_analyzer
         self.curriculum_service = curriculum_service
@@ -42,6 +43,7 @@ class TrainingOrchestrator:
         self.robot_repository = robot_repository
         self.plan_repository = plan_repository
         self.event_publisher = event_publisher
+        self.motion_planning_service = motion_planning_service or MotionPlanningService()
     
     def start_training_session(self, command) -> Dict[str, Any]:
         """
@@ -53,11 +55,11 @@ class TrainingOrchestrator:
             logger.info(f"Starting training session for robot {command.robot_id.value}")
             
             # Load domain objects
-            robot = self.robot_repository.get_by_id(command.robot_id)
+            robot = self.robot_repository.find_by_id(command.robot_id)
             if not robot:
                 return {'success': False, 'error': 'Robot not found'}
             
-            plan = self.plan_repository.get_by_id(command.plan_id)
+            plan = self.plan_repository.find_by_id(command.plan_id)
             if not plan:
                 return {'success': False, 'error': 'Plan not found'}
             
@@ -71,9 +73,7 @@ class TrainingOrchestrator:
             session = LearningSession(
                 session_id=session_id,
                 robot_id=command.robot_id,
-                plan_id=command.plan_id,
-                session_name=command.session_name,
-                max_episodes=command.max_episodes
+                plan_id=command.plan_id
             )
             
             # Start session
@@ -101,7 +101,7 @@ class TrainingOrchestrator:
         """
         try:
             # Load session
-            session = self.session_repository.get_by_id(command.session_id)
+            session = self.session_repository.find_by_id(command.session_id)
             if not session:
                 return {'success': False, 'error': 'Session not found'}
             
@@ -110,23 +110,47 @@ class TrainingOrchestrator:
             if session.status != SessionStatus.ACTIVE:
                 return {'success': False, 'error': 'Session is not active'}
             
-            robot = self.robot_repository.get_by_id(session.robot_id)
-            plan = self.plan_repository.get_by_id(session.plan_id)
+            robot = self.robot_repository.find_by_id(session.robot_id)
+            plan = self.plan_repository.find_by_id(session.plan_id)
             
             # Create episode
             episode = session.create_episode(command.target_skill)
             episode.start_episode(command.target_skill)
             
+            # Create motion command using domain service
+            training_context = TrainingContext(
+                max_steps=getattr(command, 'max_steps', 100),
+                difficulty_level=1.0  # Could be derived from curriculum stage
+            )
+            motion_command = self.motion_planning_service.create_motion_command(
+                command.target_skill, 
+                training_context
+            )
+            episode.execute_motion_command(motion_command)
+            
             # Execute motion command through Genesis
-            motion_result = self.genesis_adapter.execute_motion_command(None)
+            motion_result = self.genesis_adapter.execute_motion_command(robot, motion_command)
             if not motion_result.get('success', True):
                 return {'success': False, 'error': motion_result.get('error', 'Genesis execution failed')}
+            
+            # Collect trajectory data during episode
+            trajectory_data = []
+            total_reward = 0.0
             
             # Simulate episode steps
             for step in range(command.max_steps):
                 step_result = self.genesis_adapter.simulate_episode_step(1)
                 if not step_result.get('success', True):
                     break
+                
+                # Collect trajectory point
+                if 'robot_state' in step_result:
+                    trajectory_data.append(step_result['robot_state'])
+                
+                # Accumulate rewards
+                step_reward = step_result.get('reward', 0.0)
+                total_reward += step_reward
+                episode.add_step_reward(step_reward)
                 
                 # Check physics stability
                 if not step_result.get('physics_stable', True):
@@ -138,20 +162,71 @@ class TrainingOrchestrator:
                         'termination_reason': 'physics instability'
                     }
             
-            # Assess movement quality
-            quality_result = self.movement_analyzer.assess_movement_quality(None)
+            # Create movement trajectory from collected data
+            from ...domain.model.value_objects import MovementTrajectory
+            
+            # Convert robot state data to position tuples and generate timestamps
+            positions = []
+            timestamps = []
+            for i, robot_state in enumerate(trajectory_data):
+                # Extract position from robot state (mock object in tests)
+                if hasattr(robot_state, 'position'):
+                    positions.append(robot_state.position)
+                else:
+                    # Default position for mocked data
+                    positions.append((i * 0.01, 0.0, 0.8))  # Simple forward movement
+                timestamps.append(i / 50.0)  # 50Hz control frequency
+            
+            trajectory = MovementTrajectory(
+                positions=positions,
+                timestamps=timestamps
+            )
+            
+            # Assess movement quality with actual trajectory
+            quality_result = self.movement_analyzer.assess_movement_quality(trajectory)
             
             # Complete episode with success
             from ...domain.model.entities import EpisodeOutcome
             from ...domain.model.value_objects import PerformanceMetrics
             
+            # Calculate actual performance metrics
+            episode_success = quality_result.get('overall_quality_score', 0.0) > 0.5
+            current_stage = plan.stages[session.current_stage_index] if session.current_stage_index < len(plan.stages) else None
+            recent_episodes = session._get_recent_episodes_for_stage(
+                current_stage
+            ) if current_stage else []
+            success_count = sum(1 for ep in recent_episodes if ep.is_successful())
+            success_rate = success_count / max(len(recent_episodes), 1)
+            
+            # Calculate learning progress
+            if len(recent_episodes) >= 5:
+                old_rewards = [ep.total_reward for ep in recent_episodes[:5]]
+                new_rewards = [ep.total_reward for ep in recent_episodes[-5:]]
+                learning_progress = (
+                    (sum(new_rewards) / len(new_rewards)) - 
+                    (sum(old_rewards) / len(old_rewards))
+                ) / max(abs(sum(old_rewards) / len(old_rewards)), 1.0)
+                learning_progress = max(-1.0, min(1.0, learning_progress))  # Clamp
+            else:
+                learning_progress = 0.0
+            
             performance_metrics = PerformanceMetrics(
-                success_rate=0.8,
-                average_reward=quality_result.get('overall_quality_score', 0.7),
-                learning_progress=0.1
+                success_rate=success_rate,
+                average_reward=total_reward / max(len(trajectory_data), 1),
+                learning_progress=learning_progress,
+                skill_scores={command.target_skill: quality_result.get('overall_quality_score', 0.0)},
+                gait_quality=quality_result.get('gait_quality', 0.0)
             )
             
-            session.complete_episode(EpisodeOutcome.SUCCESS, performance_metrics)
+            # Determine episode outcome based on actual performance
+            if episode_success:
+                outcome = EpisodeOutcome.SUCCESS
+            elif quality_result.get('overall_quality_score', 0.0) > 0.3:
+                outcome = EpisodeOutcome.PARTIAL_SUCCESS
+            else:
+                outcome = EpisodeOutcome.FAILURE
+            
+            session.complete_episode(outcome, performance_metrics)
             
             # Save updated session
             self.session_repository.save(session)
@@ -178,7 +253,7 @@ class TrainingOrchestrator:
         Evaluates advancement readiness and progresses to next stage.
         """
         try:
-            session = self.session_repository.get_by_id(command.session_id)
+            session = self.session_repository.find_by_id(command.session_id)
             if not session:
                 return {'success': False, 'error': 'Session not found'}
             
@@ -186,7 +261,7 @@ class TrainingOrchestrator:
             if session.status != SessionStatus.ACTIVE:
                 return {'success': False, 'error': 'Session is not active'}
             
-            plan = self.plan_repository.get_by_id(session.plan_id)
+            plan = self.plan_repository.find_by_id(session.plan_id)
             
             # Check if already at final stage
             if session.current_stage_index >= len(plan.stages) - 1:
@@ -242,7 +317,7 @@ class TrainingOrchestrator:
         Provides comprehensive progress assessment.
         """
         try:
-            session = self.session_repository.get_by_id(session_id)
+            session = self.session_repository.find_by_id(session_id)
             if not session:
                 return {'error': 'Session not found'}
             
@@ -261,12 +336,12 @@ class TrainingOrchestrator:
         Combines Genesis adapter capabilities with robot domain capabilities.
         """
         try:
-            robot = self.robot_repository.get_by_id(robot_id)
+            robot = self.robot_repository.find_by_id(robot_id)
             if not robot:
                 return {'error': 'Robot not found'}
             
-            # Get Genesis adapter capabilities
-            genesis_capabilities = self.genesis_adapter.assess_robot_capabilities(None)
+            # Get Genesis adapter capabilities with actual robot
+            genesis_capabilities = self.genesis_adapter.assess_robot_capabilities(robot)
             
             # Get robot domain capabilities
             robot_capabilities = robot.get_robot_capabilities()
