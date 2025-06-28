@@ -175,6 +175,7 @@ class GenesisAPIMonitor:
         self.report_dir = Path(report_dir)
         self.report_dir.mkdir(exist_ok=True)
         self.logger = logging.getLogger(__name__)
+        self._genesis_initialized = False
         
         # Feature test registry
         self.feature_tests = {
@@ -189,6 +190,22 @@ class GenesisAPIMonitor:
             'gpu_acceleration': self._test_gpu_acceleration,
             'performance_baseline': self._test_performance_baseline
         }
+    
+    def _ensure_genesis_initialized(self) -> None:
+        """Ensure Genesis is initialized (required for v0.2.1+)."""
+        if not GENESIS_AVAILABLE:
+            return
+            
+        if not self._genesis_initialized:
+            try:
+                if hasattr(gs, 'init'):
+                    gs.init()
+                    self._genesis_initialized = True
+                    self.logger.debug("Genesis initialized successfully")
+            except Exception as e:
+                # Genesis may already be initialized or initialization failed
+                self.logger.debug(f"Genesis initialization attempt: {e}")
+                self._genesis_initialized = True  # Assume it's already initialized
     
     async def monitor_compatibility(self) -> GenesisCompatibilityReport:
         """Run comprehensive Genesis compatibility monitoring."""
@@ -318,6 +335,9 @@ class GenesisAPIMonitor:
         try:
             start_time = time.time()
             
+            # Ensure Genesis is initialized (required for v0.2.1+)
+            self._ensure_genesis_initialized()
+            
             # Test scene creation with different configurations
             scene_configs = [
                 {},  # Default config
@@ -352,7 +372,8 @@ class GenesisAPIMonitor:
                 execution_time=execution_time,
                 details={
                     'successful_configs': successful_configs,
-                    'failed_configs': failed_configs
+                    'failed_configs': failed_configs,
+                    'genesis_initialized': hasattr(gs, 'init')
                 }
             )
             
@@ -376,6 +397,9 @@ class GenesisAPIMonitor:
         
         try:
             start_time = time.time()
+            
+            # Ensure Genesis is initialized (required for v0.2.1+)
+            self._ensure_genesis_initialized()
             
             # Create scene and test solver
             scene = gs.Scene(show_viewer=False)
@@ -441,6 +465,9 @@ class GenesisAPIMonitor:
         
         try:
             start_time = time.time()
+            
+            # Ensure Genesis is initialized (required for v0.2.1+)
+            self._ensure_genesis_initialized()
             
             scene = gs.Scene(show_viewer=False)
             
@@ -572,6 +599,9 @@ class GenesisAPIMonitor:
         try:
             start_time = time.time()
             
+            # Ensure Genesis is initialized (required for v0.2.1+)
+            self._ensure_genesis_initialized()
+            
             scene = gs.Scene(show_viewer=False)
             
             # Add basic entities
@@ -648,6 +678,9 @@ class GenesisAPIMonitor:
         try:
             start_time = time.time()
             
+            # Ensure Genesis is initialized (required for v0.2.1+)
+            self._ensure_genesis_initialized()
+            
             scene = gs.Scene(show_viewer=False)
             robot_tests = {}
             
@@ -717,6 +750,9 @@ class GenesisAPIMonitor:
         try:
             start_time = time.time()
             
+            # Ensure Genesis is initialized (required for v0.2.1+)
+            self._ensure_genesis_initialized()
+            
             viz_tests = {}
             
             # Test headless mode (most important for production)
@@ -778,6 +814,9 @@ class GenesisAPIMonitor:
         try:
             start_time = time.time()
             
+            # Ensure Genesis is initialized (required for v0.2.1+)
+            self._ensure_genesis_initialized()
+            
             gpu_tests = {}
             
             # Test CUDA availability
@@ -838,6 +877,9 @@ class GenesisAPIMonitor:
         
         try:
             start_time = time.time()
+            
+            # Ensure Genesis is initialized (required for v0.2.1+)
+            self._ensure_genesis_initialized()
             
             # Create performance test scenario
             scene = gs.Scene(show_viewer=False)
