@@ -1,0 +1,263 @@
+[38;5;159m[Genesis] [11:42:41] [INFO] [38;5;121m╭───────────────────────────────────────────────╮[0m[38;5;159m[0m
+[38;5;159m[Genesis] [11:42:41] [INFO] [38;5;121m│┈┉┈┉┈┉┈┉┈┉┈┉┈┉┈┉┈┉┈[0m[38;5;159m [38;5;121m[1m[3mGenesis[0m[38;5;159m [38;5;121m┈┉┈┉┈┉┈┉┈┉┈┉┈┉┈┉┈┉┈│[0m[38;5;159m[0m
+[38;5;159m[Genesis] [11:42:41] [INFO] [38;5;121m╰───────────────────────────────────────────────╯[0m[38;5;159m[0m
+[38;5;159m[Genesis] [11:42:41] [INFO] Running on [38;5;121m[4m[NVIDIA GeForce RTX 3060 Ti][0m[38;5;159m with backend [38;5;121m[4mgs.cuda[0m[38;5;159m. Device memory: [38;5;121m[4m7.63[0m[38;5;159m GB.[0m
+[38;5;159m[Genesis] [11:42:41] [INFO] 🚀 Genesis initialized. 🔖 version: [38;5;121m[4m0.2.1[0m[38;5;159m, 🌱 seed: [38;5;121m[4mNone[0m[38;5;159m, 📏 precision: '[38;5;121m[4m32[0m[38;5;159m', 🐛 debug: [38;5;121m[4mFalse[0m[38;5;159m, 🎨 theme: '[38;5;121m[4mdark[0m[38;5;159m'.[0m
+[38;5;159m[Genesis] [11:42:42] [INFO] Scene [38;5;121m[3m<2a23251>[0m[38;5;159m created.[0m
+[38;5;159m[Genesis] [11:42:42] [INFO] Adding [38;5;121m<gs.RigidEntity>[0m[38;5;159m. idx: [38;5;121m0[0m[38;5;159m, uid: [38;5;121m[3m<f316ee5>[0m[38;5;159m, morph: [38;5;121m<gs.morphs.Plane>[0m[38;5;159m, material: [38;5;121m<gs.materials.Rigid>[0m[38;5;159m.[0m
+[38;5;159m[Genesis] [11:42:42] [INFO] Adding [38;5;121m<gs.RigidEntity>[0m[38;5;159m. idx: [38;5;121m1[0m[38;5;159m, uid: [38;5;121m[3m<a7e96ae>[0m[38;5;159m, morph: [38;5;121m<gs.morphs.URDF(file='/home/jkoba/SynologyDrive/genesis_humanoid_rl/assets/robots/g1/g1_29dof.urdf')>[0m[38;5;159m, material: [38;5;121m<gs.materials.Rigid>[0m[38;5;159m.[0m
+[38;5;159m[Genesis] [11:42:43] [INFO] Building scene [38;5;121m[3m<2a23251>[0m[38;5;159m...[0m
+[38;5;159m[Genesis] [11:42:48] [INFO] Compiling simulation kernels...[0m
+[38;5;159m[Genesis] [11:42:53] [INFO] Building visualizer...[0m
+[38;5;159m[Genesis] [11:42:55] [INFO] Running at [38;5;121m197.85[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:42:55] [INFO] Running at [38;5;121m197.88[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:42:55] [INFO] Running at [38;5;121m198.10[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:42:55] [INFO] Running at [38;5;121m198.58[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:42:55] [INFO] Running at [38;5;121m198.81[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:42:55] [INFO] Running at [38;5;121m199.22[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:42:55] [INFO] Running at [38;5;121m190.98[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:42:55] [INFO] Running at [38;5;121m181.76[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:42:55] [INFO] Running at [38;5;121m173.77[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:42:55] [INFO] Running at [38;5;121m166.78[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:42:56] [INFO] Scene [38;5;121m[3m<7b2d8fe>[0m[38;5;159m created.[0m
+[38;5;159m[Genesis] [11:42:56] [INFO] Adding [38;5;121m<gs.RigidEntity>[0m[38;5;159m. idx: [38;5;121m0[0m[38;5;159m, uid: [38;5;121m[3m<76e2f50>[0m[38;5;159m, morph: [38;5;121m<gs.morphs.Plane>[0m[38;5;159m, material: [38;5;121m<gs.materials.Rigid>[0m[38;5;159m.[0m
+[38;5;159m[Genesis] [11:42:56] [INFO] Adding [38;5;121m<gs.RigidEntity>[0m[38;5;159m. idx: [38;5;121m1[0m[38;5;159m, uid: [38;5;121m[3m<473ecce>[0m[38;5;159m, morph: [38;5;121m<gs.morphs.URDF(file='/home/jkoba/SynologyDrive/genesis_humanoid_rl/assets/robots/g1/g1_29dof.urdf')>[0m[38;5;159m, material: [38;5;121m<gs.materials.Rigid>[0m[38;5;159m.[0m
+[38;5;159m[Genesis] [11:42:57] [INFO] Building scene [38;5;121m[3m<7b2d8fe>[0m[38;5;159m...[0m
+[38;5;159m[Genesis] [11:43:06] [INFO] Compiling simulation kernels...[0m
+[38;5;159m[Genesis] [11:43:39] [INFO] Building visualizer...[0m
+[38;5;159m[Genesis] [11:43:40] [INFO] Running at [38;5;121m144.82[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:43:40] [INFO] Running at [38;5;121m146.63[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:43:40] [INFO] Running at [38;5;121m148.73[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:43:40] [INFO] Running at [38;5;121m150.93[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:43:40] [INFO] Running at [38;5;121m153.00[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:43:40] [INFO] Running at [38;5;121m155.10[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:43:40] [INFO] Running at [38;5;121m151.71[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:43:40] [INFO] Running at [38;5;121m147.38[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:43:40] [INFO] Running at [38;5;121m143.41[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:43:40] [INFO] Running at [38;5;121m139.82[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:43:41] [INFO] Scene [38;5;121m[3m<077b3b5>[0m[38;5;159m created.[0m
+[38;5;159m[Genesis] [11:43:41] [INFO] Adding [38;5;121m<gs.RigidEntity>[0m[38;5;159m. idx: [38;5;121m0[0m[38;5;159m, uid: [38;5;121m[3m<f8d895a>[0m[38;5;159m, morph: [38;5;121m<gs.morphs.Plane>[0m[38;5;159m, material: [38;5;121m<gs.materials.Rigid>[0m[38;5;159m.[0m
+[38;5;159m[Genesis] [11:43:41] [INFO] Adding [38;5;121m<gs.RigidEntity>[0m[38;5;159m. idx: [38;5;121m1[0m[38;5;159m, uid: [38;5;121m[3m<34b2c72>[0m[38;5;159m, morph: [38;5;121m<gs.morphs.URDF(file='/home/jkoba/SynologyDrive/genesis_humanoid_rl/assets/robots/g1/g1_29dof.urdf')>[0m[38;5;159m, material: [38;5;121m<gs.materials.Rigid>[0m[38;5;159m.[0m
+[38;5;159m[Genesis] [11:43:42] [INFO] Building scene [38;5;121m[3m<077b3b5>[0m[38;5;159m...[0m
+[38;5;159m[Genesis] [11:43:51] [INFO] Compiling simulation kernels...[0m
+[38;5;159m[Genesis] [11:44:24] [INFO] Building visualizer...[0m
+[38;5;159m[Genesis] [11:44:25] [INFO] Running at [38;5;121m147.86[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:44:25] [INFO] Running at [38;5;121m149.49[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:44:25] [INFO] Running at [38;5;121m151.51[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:44:25] [INFO] Running at [38;5;121m153.57[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:44:25] [INFO] Running at [38;5;121m155.58[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:44:25] [INFO] Running at [38;5;121m157.57[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:44:25] [INFO] Running at [38;5;121m154.08[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:44:25] [INFO] Running at [38;5;121m149.51[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:44:25] [INFO] Running at [38;5;121m145.31[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:44:25] [INFO] Running at [38;5;121m141.53[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:44:25] [INFO] Running at [38;5;121m60.32[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:44:25] [INFO] Running at [38;5;121m62.52[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:44:25] [INFO] Running at [38;5;121m64.75[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:44:25] [INFO] Running at [38;5;121m67.03[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:44:25] [INFO] Running at [38;5;121m69.39[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:44:26] [INFO] Scene [38;5;121m[3m<de58e89>[0m[38;5;159m created.[0m
+[38;5;159m[Genesis] [11:44:26] [INFO] Adding [38;5;121m<gs.RigidEntity>[0m[38;5;159m. idx: [38;5;121m0[0m[38;5;159m, uid: [38;5;121m[3m<f38c71c>[0m[38;5;159m, morph: [38;5;121m<gs.morphs.Plane>[0m[38;5;159m, material: [38;5;121m<gs.materials.Rigid>[0m[38;5;159m.[0m
+[38;5;159m[Genesis] [11:44:26] [INFO] Adding [38;5;121m<gs.RigidEntity>[0m[38;5;159m. idx: [38;5;121m1[0m[38;5;159m, uid: [38;5;121m[3m<32ffd8b>[0m[38;5;159m, morph: [38;5;121m<gs.morphs.URDF(file='/home/jkoba/SynologyDrive/genesis_humanoid_rl/assets/robots/g1/g1_29dof.urdf')>[0m[38;5;159m, material: [38;5;121m<gs.materials.Rigid>[0m[38;5;159m.[0m
+[38;5;159m[Genesis] [11:44:27] [INFO] Building scene [38;5;121m[3m<de58e89>[0m[38;5;159m...[0m
+[38;5;159m[Genesis] [11:44:36] [INFO] Compiling simulation kernels...[0m
+[38;5;159m[Genesis] [11:45:10] [INFO] Building visualizer...[0m
+[38;5;159m[Genesis] [11:45:10] [INFO] Running at [38;5;121m144.07[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:10] [INFO] Running at [38;5;121m145.90[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:10] [INFO] Running at [38;5;121m148.04[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:10] [INFO] Running at [38;5;121m150.20[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:10] [INFO] Running at [38;5;121m152.26[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:10] [INFO] Running at [38;5;121m154.34[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:10] [INFO] Running at [38;5;121m151.04[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:10] [INFO] Running at [38;5;121m146.80[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m142.88[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m139.33[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m59.85[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m62.05[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m64.31[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m66.57[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m68.92[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m64.02[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m66.30[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m68.63[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m70.99[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m73.39[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m67.63[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m69.97[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m72.35[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m74.78[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m77.17[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m68.21[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m70.57[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m72.97[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m75.42[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m77.86[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m65.75[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m68.08[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m70.45[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m72.86[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m75.22[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m62.23[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m64.47[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m66.74[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m69.08[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m70.44[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m57.15[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m59.29[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m61.47[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m63.71[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m65.34[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m55.27[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m57.37[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m59.52[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m61.73[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m63.50[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m52.88[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m54.92[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m57.01[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m59.17[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m60.99[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m52.55[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m54.59[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m56.68[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m58.81[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:11] [INFO] Running at [38;5;121m60.68[0m[38;5;159m FPS.[0m
+=== Progressive Training with Video Generation ===
+Total timesteps: 100,000
+Video checkpoints every: 25,000 steps
+This will generate videos showing learning progression
+
+Creating training environment...
+Initialized RobotGroundingCalculator
+  Robot links: 30
+  Robot DOFs: 35
+Detecting foot links...
+  Found 2 foot links
+    - left_ankle_roll_link
+    - right_ankle_roll_link
+Calculating grounding height...
+  Current base height: 1.000m
+  Lowest foot point: 0.243m
+  Calculated grounding height: 0.787m
+  (This will place feet 30.0mm above ground)
+Loaded G1 robot with 35 DOFs
+Robot has 30 links
+Initialized RobotGroundingCalculator
+  Robot links: 30
+  Robot DOFs: 35
+Detecting foot links...
+  Found 2 foot links
+    - left_ankle_roll_link
+    - right_ankle_roll_link
+Calculating grounding height...
+  Current base height: 1.000m
+  Lowest foot point: 0.243m
+  Calculated grounding height: 0.787m
+  (This will place feet 30.0mm above ground)
+Loaded G1 robot with 35 DOFs
+Robot has 30 links
+Initialized RobotGroundingCalculator
+  Robot links: 30
+  Robot DOFs: 35
+Detecting foot links...
+  Found 2 foot links
+    - left_ankle_roll_link
+    - right_ankle_roll_link
+Calculating grounding height...
+  Current base height: 1.000m
+  Lowest foot point: 0.243m
+  Calculated grounding height: 0.787m
+  (This will place feet 30.0mm above ground)
+Loaded G1 robot with 35 DOFs
+Robot has 30 links
+Initialized RobotGroundingCalculator
+  Robot links: 30
+  Robot DOFs: 35
+Detecting foot links...
+  Found 2 foot links
+    - left_ankle_roll_link
+    - right_ankle_roll_link
+Calculating grounding height...
+  Current base height: 1.000m
+  Lowest foot point: 0.243m
+  Calculated grounding height: 0.787m
+  (This will place feet 30.0mm above ground)
+Loaded G1 robot with 35 DOFs
+Robot has 30 links
+✓ Environment passed SB3 compatibility check
+Logging to ./logs/progression_demo
+/home/jkoba/SynologyDrive/genesis_humanoid_rl/.venv/lib/python3.10/site-packages/stable_baselines3/common/on_policy_algorithm.py:150: UserWarning: You are trying to run PPO on the GPU, but it is primarily intended to run on the CPU when not using a CNN policy (you are using ActorCriticPolicy which should be a MlpPolicy). See https://github.com/DLR-RM/stable-baselines3/issues/1245 for more info. You can pass `device='cpu'` or `export CUDA_VISIBLE_DEVICES=` to force using the CPU.Note: The model will train, but the GPU utilization will be poor and the training might take longer than on CPU.
+  warnings.warn(
+[38;5;159m[Genesis] [11:45:13] [INFO] Scene [38;5;121m[3m<28d5599>[0m[38;5;159m created.[0m
+[38;5;159m[Genesis] [11:45:13] [INFO] Adding [38;5;121m<gs.RigidEntity>[0m[38;5;159m. idx: [38;5;121m0[0m[38;5;159m, uid: [38;5;121m[3m<4a557be>[0m[38;5;159m, morph: [38;5;121m<gs.morphs.Plane>[0m[38;5;159m, material: [38;5;121m<gs.materials.Rigid>[0m[38;5;159m.[0m
+[38;5;159m[Genesis] [11:45:13] [INFO] Adding [38;5;121m<gs.RigidEntity>[0m[38;5;159m. idx: [38;5;121m1[0m[38;5;159m, uid: [38;5;121m[3m<b302969>[0m[38;5;159m, morph: [38;5;121m<gs.morphs.URDF(file='/home/jkoba/SynologyDrive/genesis_humanoid_rl/assets/robots/g1/g1_29dof.urdf')>[0m[38;5;159m, material: [38;5;121m<gs.materials.Rigid>[0m[38;5;159m.[0m
+[38;5;159m[Genesis] [11:45:14] [INFO] Building scene [38;5;121m[3m<28d5599>[0m[38;5;159m...[0m
+[38;5;159m[Genesis] [11:45:23] [INFO] Compiling simulation kernels...[0m
+[38;5;159m[Genesis] [11:45:59] [INFO] Building visualizer...[0m
+[38;5;159m[Genesis] [11:45:59] [INFO] Running at [38;5;121m142.79[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:59] [INFO] Running at [38;5;121m144.66[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:59] [INFO] Running at [38;5;121m146.89[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:59] [INFO] Running at [38;5;121m149.15[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:59] [INFO] Running at [38;5;121m151.28[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:59] [INFO] Running at [38;5;121m153.47[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:59] [INFO] Running at [38;5;121m149.91[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:59] [INFO] Running at [38;5;121m145.75[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:59] [INFO] Running at [38;5;121m141.94[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:45:59] [INFO] Running at [38;5;121m138.49[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:46:00] [INFO] Running at [38;5;121m23.58[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:46:00] [INFO] Running at [38;5;121m24.67[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:46:00] [INFO] Running at [38;5;121m25.80[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:46:00] [INFO] Running at [38;5;121m26.98[0m[38;5;159m FPS.[0m
+[38;5;159m[Genesis] [11:46:00] [INFO] Running at [38;5;121m28.21[0m[38;5;159m FPS.[0m
+Creating PPO model...
+Using cuda device
+Wrapping the env with a `Monitor` wrapper
+Wrapping the env in a DummyVecEnv.
+
+📹 Creating initial video of untrained robot...
+Initialized RobotGroundingCalculator
+  Robot links: 30
+  Robot DOFs: 35
+Detecting foot links...
+  Found 2 foot links
+    - left_ankle_roll_link
+    - right_ankle_roll_link
+Calculating grounding height...
+  Current base height: 1.000m
+  Lowest foot point: 0.243m
+  Calculated grounding height: 0.787m
+  (This will place feet 30.0mm above ground)
+Loaded G1 robot with 35 DOFs
+Robot has 30 links
+Traceback (most recent call last):
+  File "/home/jkoba/SynologyDrive/genesis_humanoid_rl/scripts/train_with_progression_videos.py", line 254, in <module>
+    main()
+  File "/home/jkoba/SynologyDrive/genesis_humanoid_rl/scripts/train_with_progression_videos.py", line 250, in main
+    train_with_progression_videos(args.config)
+  File "/home/jkoba/SynologyDrive/genesis_humanoid_rl/scripts/train_with_progression_videos.py", line 161, in train_with_progression_videos
+    if terminated.any() or truncated.any():
+AttributeError: 'bool' object has no attribute 'any'
+[38;5;159m[Genesis] [11:46:00] [INFO] 💤 Exiting Genesis and caching compiled kernels...[0m
+Exception ignored in atexit callback: <function _gs_exit at 0x71b446499f30>
+Traceback (most recent call last):
+  File "/home/jkoba/SynologyDrive/genesis_humanoid_rl/.venv/lib/python3.10/site-packages/genesis/__init__.py", line 246, in _gs_exit
+    destroy()
+  File "/home/jkoba/SynologyDrive/genesis_humanoid_rl/.venv/lib/python3.10/site-packages/genesis/__init__.py", line 179, in destroy
+    scene._visualizer._rasterizer.destroy()
+  File "/home/jkoba/SynologyDrive/genesis_humanoid_rl/.venv/lib/python3.10/site-packages/genesis/vis/rasterizer.py", line 126, in destroy
+    self._renderer._platform.make_current()
+  File "/home/jkoba/SynologyDrive/genesis_humanoid_rl/.venv/lib/python3.10/site-packages/genesis/ext/pyrender/platforms/egl.py", line 220, in make_current
+    assert eglMakeCurrent(self._egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, self._egl_context)
+  File "/home/jkoba/SynologyDrive/genesis_humanoid_rl/.venv/lib/python3.10/site-packages/OpenGL/error.py", line 230, in glCheckError
+    raise self._errorClass(
+OpenGL.raw.EGL._errors.EGLError: EGLError(
+	err = EGL_NOT_INITIALIZED,
+	baseOperation = eglMakeCurrent,
+	cArguments = (
+		<OpenGL._opaque.EGLDisplay_pointer object at 0x71b387503c40>,
+		<OpenGL._opaque.EGLSurface_pointer object at 0x71b3a84b3ac0>,
+		<OpenGL._opaque.EGLSurface_pointer object at 0x71b3a84b3ac0>,
+		<OpenGL._opaque.EGLContext_pointer object at 0x71b3869d72c0>,
+	),
+	result = 0
+)

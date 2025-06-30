@@ -1,0 +1,15 @@
+{
+  "status": "training",
+  "current_steps": 828,
+  "total_steps": 100000,
+  "progress": 0.828,
+  "checkpoint_steps": [
+    0,
+    10000,
+    25000,
+    50000,
+    75000,
+    100000
+  ],
+  "last_update": "2025-06-30T21:33:07.325488"
+}

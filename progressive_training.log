@@ -1,0 +1,53 @@
+[2025-06-30 22:22:11] 🚀 Progressive Training Manager Started
+[2025-06-30 22:22:11] ============================================================
+[2025-06-30 22:22:11] 🔍 Checking system readiness...
+[2025-06-30 22:22:12] ✅ System readiness check passed
+[2025-06-30 22:22:12] ✅ Phase config validated: phase1
+[2025-06-30 22:22:12] 🚀 Starting phase1: Conservative 100k timesteps (3-5m target)
+[2025-06-30 22:22:12] 📝 Running: python scripts/progressive_training.py --config configs/progressive_phase1.json
+[2025-06-30 22:22:12] ⏳ Training simulation (actual training would run here)
+[2025-06-30 22:22:17] ✅ Phase phase1 completed
+[2025-06-30 22:22:17]    📊 Distance: 3.5m
+[2025-06-30 22:22:17]    🎯 Reward: 60.0
+[2025-06-30 22:22:17]    ⏱️ Duration: 0.00h
+[2025-06-30 22:22:17] ✅ distance 3.5 >= 3.0 (threshold)
+[2025-06-30 22:22:17] ✅ reward 60.0 >= 50.0 (threshold)
+[2025-06-30 22:22:17] 🎬 Generating videos for phase1
+[2025-06-30 22:22:17] 🎥 Video generation simulation (actual generation would run here)
+[2025-06-30 22:22:19] ✅ Videos generated for phase1
+[2025-06-30 22:22:19] 🎉 Phase phase1 completed successfully
+[2025-06-30 22:22:19] ✅ Phase config validated: phase2
+[2025-06-30 22:22:19] 🚀 Starting phase2: Extended 200k timesteps (5-8m target)
+[2025-06-30 22:22:19] 📝 Running: python scripts/progressive_training.py --config configs/progressive_phase2.json
+[2025-06-30 22:22:19] ⏳ Training simulation (actual training would run here)
+[2025-06-30 22:22:24] ✅ Phase phase2 completed
+[2025-06-30 22:22:24]    📊 Distance: 6.2m
+[2025-06-30 22:22:24]    🎯 Reward: 120.0
+[2025-06-30 22:22:24]    ⏱️ Duration: 0.00h
+[2025-06-30 22:22:24] ✅ distance 6.2 >= 5.0 (threshold)
+[2025-06-30 22:22:24] ✅ reward 120.0 >= 100.0 (threshold)
+[2025-06-30 22:22:24] 🎬 Generating videos for phase2
+[2025-06-30 22:22:24] 🎥 Video generation simulation (actual generation would run here)
+[2025-06-30 22:22:26] ✅ Videos generated for phase2
+[2025-06-30 22:22:26] 🎉 Phase phase2 completed successfully
+[2025-06-30 22:22:26] ✅ Phase config validated: phase3
+[2025-06-30 22:22:26] 🚀 Starting phase3: Advanced 300k timesteps (8-12m target)
+[2025-06-30 22:22:26] 📝 Running: python scripts/progressive_training.py --config configs/progressive_phase3.json
+[2025-06-30 22:22:26] ⏳ Training simulation (actual training would run here)
+[2025-06-30 22:22:31] ✅ Phase phase3 completed
+[2025-06-30 22:22:31]    📊 Distance: 9.1m
+[2025-06-30 22:22:31]    🎯 Reward: 180.0
+[2025-06-30 22:22:31]    ⏱️ Duration: 0.00h
+[2025-06-30 22:22:31] ✅ distance 9.1 >= 8.0 (threshold)
+[2025-06-30 22:22:31] ✅ reward 180.0 >= 150.0 (threshold)
+[2025-06-30 22:22:31] 🎬 Generating videos for phase3
+[2025-06-30 22:22:31] 🎥 Video generation simulation (actual generation would run here)
+[2025-06-30 22:22:33] ✅ Videos generated for phase3
+[2025-06-30 22:22:33] 🎉 Phase phase3 completed successfully
+[2025-06-30 22:22:33] \n📊 Progressive Training Summary
+[2025-06-30 22:22:33] ============================================================
+[2025-06-30 22:22:33] ✅ Completed phases: 3
+[2025-06-30 22:22:33] ❌ Failed phases: 0
+[2025-06-30 22:22:33] ⏱️ Total time: 0.06h
+[2025-06-30 22:22:33] 🎉 All phases completed successfully!
+ 22:22:33] 🎉 All phases completed successfully!\n

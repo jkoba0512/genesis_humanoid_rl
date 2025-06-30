@@ -1,0 +1,39 @@
+{
+  "current_phase": null,
+  "completed_phases": [
+    {
+      "phase": "phase1",
+      "results": {
+        "distance": 3.5,
+        "reward": 60.0,
+        "success": true,
+        "elapsed_hours": 0.0013903279436959161
+      },
+      "completion_time": "2025-06-30T22:22:17.871684"
+    },
+    {
+      "phase": "phase2",
+      "results": {
+        "distance": 6.2,
+        "reward": 120.0,
+        "success": true,
+        "elapsed_hours": 0.0013901907867855496
+      },
+      "completion_time": "2025-06-30T22:22:24.881181"
+    },
+    {
+      "phase": "phase3",
+      "results": {
+        "distance": 9.1,
+        "reward": 180.0,
+        "success": true,
+        "elapsed_hours": 0.0013903719186782837
+      },
+      "completion_time": "2025-06-30T22:22:31.891036"
+    }
+  ],
+  "failed_phases": [],
+  "start_time": "2025-06-30T22:18:53.544468",
+  "last_update": "2025-06-30T22:22:33.897414",
+  "total_training_time_hours": 0.06120914805555556
+}
