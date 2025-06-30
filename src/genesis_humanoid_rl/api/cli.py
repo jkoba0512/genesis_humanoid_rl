@@ -21,10 +21,7 @@ def setup_logging(level: str = "INFO"):
     logging.basicConfig(
         level=getattr(logging, level.upper()),
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        handlers=[
-            logging.StreamHandler(sys.stdout),
-            logging.FileHandler("api.log")
-        ]
+        handlers=[logging.StreamHandler(sys.stdout), logging.FileHandler("api.log")],
     )
 
 
@@ -43,112 +40,84 @@ Examples:
 
   # Custom configuration
   python -m genesis_humanoid_rl.api.cli --cors-origins http://localhost:3000 --rate-limit 100
-        """
+        """,
     )
-    
+
     # Server configuration
     parser.add_argument(
-        "--host", 
+        "--host",
         default="127.0.0.1",
-        help="Host to bind server to (default: 127.0.0.1)"
+        help="Host to bind server to (default: 127.0.0.1)",
     )
     parser.add_argument(
-        "--port", 
-        type=int, 
-        default=8000,
-        help="Port to bind server to (default: 8000)"
+        "--port", type=int, default=8000, help="Port to bind server to (default: 8000)"
     )
     parser.add_argument(
-        "--workers", 
-        type=int, 
-        default=1,
-        help="Number of worker processes (default: 1)"
+        "--workers", type=int, default=1, help="Number of worker processes (default: 1)"
     )
-    
+
     # Environment and debug
     parser.add_argument(
-        "--env", 
+        "--env",
         choices=["development", "production", "custom"],
         default="custom",
-        help="Environment preset (default: custom)"
+        help="Environment preset (default: custom)",
     )
     parser.add_argument(
-        "--dev", 
+        "--dev",
         action="store_true",
-        help="Enable development mode (debug, auto-reload, permissive CORS)"
+        help="Enable development mode (debug, auto-reload, permissive CORS)",
     )
     parser.add_argument(
-        "--reload", 
-        action="store_true",
-        help="Enable auto-reload on code changes"
+        "--reload", action="store_true", help="Enable auto-reload on code changes"
     )
     parser.add_argument(
-        "--debug", 
+        "--debug",
         action="store_true",
-        help="Enable debug mode with docs and detailed errors"
+        help="Enable debug mode with docs and detailed errors",
     )
-    
+
     # Security and middleware
     parser.add_argument(
-        "--cors-origins", 
+        "--cors-origins",
         nargs="*",
-        help="Allowed CORS origins (default: none for production, all for dev)"
+        help="Allowed CORS origins (default: none for production, all for dev)",
     )
     parser.add_argument(
-        "--rate-limit", 
-        type=int, 
+        "--rate-limit",
+        type=int,
         default=1000,
-        help="Rate limit per client per minute (default: 1000, 0 to disable)"
+        help="Rate limit per client per minute (default: 1000, 0 to disable)",
     )
     parser.add_argument(
-        "--api-key-required", 
-        action="store_true",
-        help="Require API key authentication"
+        "--api-key-required", action="store_true", help="Require API key authentication"
     )
-    
+
     # Logging
     parser.add_argument(
-        "--log-level", 
+        "--log-level",
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
         default="INFO",
-        help="Logging level (default: INFO)"
+        help="Logging level (default: INFO)",
     )
     parser.add_argument(
-        "--access-log", 
-        action="store_true",
-        help="Enable access logging"
+        "--access-log", action="store_true", help="Enable access logging"
     )
-    
+
     # TLS/SSL
-    parser.add_argument(
-        "--ssl-keyfile", 
-        type=Path,
-        help="SSL private key file"
-    )
-    parser.add_argument(
-        "--ssl-certfile", 
-        type=Path,
-        help="SSL certificate file"
-    )
-    
+    parser.add_argument("--ssl-keyfile", type=Path, help="SSL private key file")
+    parser.add_argument("--ssl-certfile", type=Path, help="SSL certificate file")
+
     # API configuration
-    parser.add_argument(
-        "--title", 
-        default="Genesis Humanoid RL API",
-        help="API title"
-    )
-    parser.add_argument(
-        "--version", 
-        default="1.0.0",
-        help="API version"
-    )
-    
+    parser.add_argument("--title", default="Genesis Humanoid RL API", help="API title")
+    parser.add_argument("--version", default="1.0.0", help="API version")
+
     args = parser.parse_args()
-    
+
     # Setup logging
     setup_logging(args.log_level)
     logger = logging.getLogger(__name__)
-    
+
     # Create app based on environment
     if args.env == "development" or args.dev:
         logger.info("Creating development app")
@@ -165,15 +134,15 @@ Examples:
             debug=args.debug or args.dev,
             enable_rate_limiting=args.rate_limit > 0,
             rate_limit_per_minute=args.rate_limit,
-            cors_origins=args.cors_origins
+            cors_origins=args.cors_origins,
         )
-    
+
     # Update app title if provided
     if args.title != "Genesis Humanoid RL API":
         app.title = args.title
     if args.version != "1.0.0":
         app.version = args.version
-    
+
     # Configure uvicorn settings
     uvicorn_config = {
         "app": app,
@@ -182,17 +151,19 @@ Examples:
         "log_level": args.log_level.lower(),
         "access_log": args.access_log,
         "reload": args.reload or args.dev,
-        "workers": 1 if (args.reload or args.dev) else args.workers
+        "workers": 1 if (args.reload or args.dev) else args.workers,
     }
-    
+
     # Add SSL if provided
     if args.ssl_keyfile and args.ssl_certfile:
-        uvicorn_config.update({
-            "ssl_keyfile": str(args.ssl_keyfile),
-            "ssl_certfile": str(args.ssl_certfile)
-        })
+        uvicorn_config.update(
+            {
+                "ssl_keyfile": str(args.ssl_keyfile),
+                "ssl_certfile": str(args.ssl_certfile),
+            }
+        )
         logger.info("SSL enabled")
-    
+
     # Log startup configuration
     logger.info(f"Starting Genesis Humanoid RL API server")
     logger.info(f"Host: {args.host}:{args.port}")
@@ -200,12 +171,12 @@ Examples:
     logger.info(f"Debug mode: {args.debug or args.dev}")
     logger.info(f"Workers: {uvicorn_config['workers']}")
     logger.info(f"Auto-reload: {uvicorn_config['reload']}")
-    
+
     if args.cors_origins:
         logger.info(f"CORS origins: {args.cors_origins}")
     if args.rate_limit > 0:
         logger.info(f"Rate limiting: {args.rate_limit} requests/minute")
-    
+
     try:
         # Start server
         uvicorn.run(**uvicorn_config)

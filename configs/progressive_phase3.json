@@ -1,0 +1,58 @@
+{
+    "description": "Phase 3: Advanced 300k timesteps learning (8-12m walking target)",
+    "training": {
+        "total_timesteps": 300000,
+        "n_envs": 2,
+        "batch_size": 64,
+        "n_steps": 800,
+        "save_freq": 5000,
+        "checkpoint_saves": [75000, 150000, 225000, 300000],
+        "eval_freq": 20000,
+        "log_interval": 100
+    },
+    "environment": {
+        "episode_length": 1000,
+        "simulation_fps": 60,
+        "control_freq": 30,
+        "render": false,
+        "headless": true,
+        "target_velocity": 1.5,
+        "environment_size": [40, 40],
+        "safety_distance_limit": 25.0
+    },
+    "rewards": {
+        "forward_velocity": 2.5,
+        "distance_traveled": 2.0,
+        "stability": 1.0,
+        "height_maintenance": 0.5,
+        "energy_efficiency": -0.05,
+        "action_smoothness": -0.05,
+        "height_safety": -1.0,
+        "distance_bonus_threshold": 8.0,
+        "distance_bonus_multiplier": 3.0
+    },
+    "ppo": {
+        "learning_rate": 0.0001,
+        "n_epochs": 10,
+        "clip_range": 0.2,
+        "clip_range_vf": null,
+        "ent_coef": 0.005,
+        "vf_coef": 0.5,
+        "max_grad_norm": 0.5,
+        "gamma": 0.998,
+        "gae_lambda": 0.95,
+        "normalize_advantage": true
+    },
+    "network": {
+        "policy_kwargs": {
+            "net_arch": [512, 512, 256, 128],
+            "activation_fn": "tanh"
+        }
+    },
+    "monitoring": {
+        "tensorboard_log": "./logs/progressive_phase3",
+        "video_save_path": "./videos/progressive_phase3",
+        "checkpoint_path": "./models/progressive_phase3",
+        "status_file": "./progressive_phase3_status.json"
+    }
+}

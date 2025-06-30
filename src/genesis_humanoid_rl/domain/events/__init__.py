@@ -18,7 +18,7 @@ from .domain_events import (
 
 __all__ = [
     "EventType",
-    "EpisodeCompleted", 
+    "EpisodeCompleted",
     "CurriculumStageAdvanced",
     "SkillMastered",
     "LearningSessionStarted",

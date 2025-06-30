@@ -10,9 +10,11 @@ from typing import Dict, List, Optional, Any, Union
 from enum import Enum
 from pydantic import BaseModel, Field, validator, ConfigDict
 
+
 # Status enums
 class TrainingStatus(str, Enum):
     """Training session status."""
+
     CREATED = "created"
     RUNNING = "running"
     PAUSED = "paused"
@@ -23,6 +25,7 @@ class TrainingStatus(str, Enum):
 
 class EvaluationStatus(str, Enum):
     """Evaluation status."""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -31,6 +34,7 @@ class EvaluationStatus(str, Enum):
 
 class RobotTypeAPI(str, Enum):
     """Robot types for API."""
+
     UNITREE_G1 = "unitree_g1"
     GENERIC_HUMANOID = "generic_humanoid"
     CUSTOM = "custom"
@@ -38,6 +42,7 @@ class RobotTypeAPI(str, Enum):
 
 class SkillTypeAPI(str, Enum):
     """Skill types for API."""
+
     POSTURAL_CONTROL = "postural_control"
     STATIC_BALANCE = "static_balance"
     DYNAMIC_BALANCE = "dynamic_balance"
@@ -52,6 +57,7 @@ class SkillTypeAPI(str, Enum):
 # Base models
 class BaseResponse(BaseModel):
     """Base response model."""
+
     success: bool = True
     message: Optional[str] = None
     timestamp: datetime = Field(default_factory=datetime.now)
@@ -59,6 +65,7 @@ class BaseResponse(BaseModel):
 
 class ErrorResponse(BaseResponse):
     """Error response model."""
+
     success: bool = False
     error_code: Optional[str] = None
     error_details: Optional[Dict[str, Any]] = None
@@ -67,6 +74,7 @@ class ErrorResponse(BaseResponse):
 # Configuration models
 class TrainingConfig(BaseModel):
     """Training configuration model."""
+
     algorithm: str = "PPO"
     total_timesteps: int = Field(default=1000000, ge=1000)
     learning_rate: float = Field(default=3e-4, gt=0)
@@ -78,37 +86,40 @@ class TrainingConfig(BaseModel):
     ent_coef: float = Field(default=0.01, ge=0)
     vf_coef: float = Field(default=0.5, ge=0)
     max_grad_norm: float = Field(default=0.5, gt=0)
-    policy_kwargs: Dict[str, Any] = Field(default_factory=lambda: {
-        "net_arch": [256, 256, 128],
-        "activation_fn": "tanh"
-    })
-    
-    @validator('algorithm')
+    policy_kwargs: Dict[str, Any] = Field(
+        default_factory=lambda: {"net_arch": [256, 256, 128], "activation_fn": "tanh"}
+    )
+
+    @validator("algorithm")
     def validate_algorithm(cls, v):
-        allowed = ['PPO', 'SAC', 'TD3', 'A2C']
+        allowed = ["PPO", "SAC", "TD3", "A2C"]
         if v not in allowed:
-            raise ValueError(f'Algorithm must be one of {allowed}')
+            raise ValueError(f"Algorithm must be one of {allowed}")
         return v
 
 
 class EnvironmentConfig(BaseModel):
     """Environment configuration model."""
+
     episode_length: int = Field(default=1000, ge=100)
     simulation_fps: int = Field(default=100, ge=10, le=1000)
     control_freq: int = Field(default=20, ge=1, le=100)
     target_velocity: float = Field(default=1.0, ge=0, le=10)
     n_envs: int = Field(default=4, ge=1, le=64)
-    reward_weights: Dict[str, float] = Field(default_factory=lambda: {
-        "forward_velocity": 1.0,
-        "stability": 0.5,
-        "height_maintenance": 0.3,
-        "energy_efficiency": -0.1,
-        "action_smoothness": -0.1
-    })
+    reward_weights: Dict[str, float] = Field(
+        default_factory=lambda: {
+            "forward_velocity": 1.0,
+            "stability": 0.5,
+            "height_maintenance": 0.3,
+            "energy_efficiency": -0.1,
+            "action_smoothness": -0.1,
+        }
+    )
 
 
 class CurriculumConfig(BaseModel):
     """Curriculum learning configuration."""
+
     enable_curriculum: bool = True
     stages: List[Dict[str, Any]] = Field(default_factory=list)
     auto_progression: bool = True
@@ -118,6 +129,7 @@ class CurriculumConfig(BaseModel):
 
 class RobotConfig(BaseModel):
     """Robot configuration model."""
+
     robot_type: RobotTypeAPI = RobotTypeAPI.UNITREE_G1
     name: str = Field(..., min_length=1, max_length=100)
     urdf_path: Optional[str] = None
@@ -133,6 +145,7 @@ class RobotConfig(BaseModel):
 # Request models
 class CreateTrainingRequest(BaseModel):
     """Request to create a new training session."""
+
     session_name: str = Field(..., min_length=1, max_length=200)
     robot_config: RobotConfig
     training_config: TrainingConfig
@@ -144,6 +157,7 @@ class CreateTrainingRequest(BaseModel):
 
 class UpdateTrainingRequest(BaseModel):
     """Request to update training session parameters."""
+
     session_name: Optional[str] = Field(None, min_length=1, max_length=200)
     description: Optional[str] = Field(None, max_length=1000)
     tags: Optional[List[str]] = None
@@ -153,12 +167,14 @@ class UpdateTrainingRequest(BaseModel):
 
 class TrainingControlRequest(BaseModel):
     """Request to control training session (start/pause/stop)."""
+
     action: str = Field(..., pattern="^(start|pause|resume|stop|cancel)$")
     reason: Optional[str] = Field(None, max_length=500)
 
 
 class EvaluationRequest(BaseModel):
     """Request to evaluate a trained model."""
+
     model_path: str = Field(..., min_length=1)
     num_episodes: int = Field(default=10, ge=1, le=100)
     render: bool = False
@@ -170,6 +186,7 @@ class EvaluationRequest(BaseModel):
 
 class SkillAssessmentRequest(BaseModel):
     """Request to assess robot skills."""
+
     robot_id: str = Field(..., min_length=1)
     skill_types: List[SkillTypeAPI] = Field(..., min_items=1)
     assessment_episodes: int = Field(default=20, ge=5, le=100)
@@ -179,6 +196,7 @@ class SkillAssessmentRequest(BaseModel):
 # Response models
 class TrainingSessionResponse(BaseModel):
     """Training session response model."""
+
     session_id: str
     session_name: str
     status: TrainingStatus
@@ -200,6 +218,7 @@ class TrainingSessionResponse(BaseModel):
 
 class TrainingMetrics(BaseModel):
     """Training metrics model."""
+
     episode: int
     timestep: int
     episode_reward: float
@@ -216,6 +235,7 @@ class TrainingMetrics(BaseModel):
 
 class EvaluationResult(BaseModel):
     """Evaluation result model."""
+
     evaluation_id: str
     evaluation_name: Optional[str]
     model_path: str
@@ -234,6 +254,7 @@ class EvaluationResult(BaseModel):
 
 class SkillAssessmentResult(BaseModel):
     """Skill assessment result model."""
+
     assessment_id: str
     robot_id: str
     skill_type: SkillTypeAPI
@@ -250,6 +271,7 @@ class SkillAssessmentResult(BaseModel):
 
 class RobotStatus(BaseModel):
     """Robot status model."""
+
     robot_id: str
     robot_name: str
     robot_type: RobotTypeAPI
@@ -264,6 +286,7 @@ class RobotStatus(BaseModel):
 
 class SystemStatus(BaseModel):
     """System status model."""
+
     system_id: str = "genesis_humanoid_rl"
     version: str = "1.0.0"
     status: str = "healthy"  # healthy, degraded, error
@@ -278,6 +301,7 @@ class SystemStatus(BaseModel):
 
 class GenesisCompatibilityResponse(BaseModel):
     """Genesis compatibility response model."""
+
     genesis_version: str
     compatibility_level: str
     compatibility_score: float = Field(..., ge=0, le=1)
@@ -292,6 +316,7 @@ class GenesisCompatibilityResponse(BaseModel):
 # List response models
 class TrainingSessionListResponse(BaseResponse):
     """List of training sessions response."""
+
     sessions: List[TrainingSessionResponse] = Field(default_factory=list)
     total_count: int = 0
     page: int = 1
@@ -301,6 +326,7 @@ class TrainingSessionListResponse(BaseResponse):
 
 class EvaluationListResponse(BaseResponse):
     """List of evaluations response."""
+
     evaluations: List[EvaluationResult] = Field(default_factory=list)
     total_count: int = 0
     page: int = 1
@@ -310,12 +336,14 @@ class EvaluationListResponse(BaseResponse):
 
 class RobotListResponse(BaseResponse):
     """List of robots response."""
+
     robots: List[RobotStatus] = Field(default_factory=list)
     total_count: int = 0
 
 
 class MetricsResponse(BaseResponse):
     """Training metrics response."""
+
     metrics: List[TrainingMetrics] = Field(default_factory=list)
     session_id: str
     start_time: Optional[datetime] = None
@@ -325,6 +353,7 @@ class MetricsResponse(BaseResponse):
 # Pagination models
 class PaginationParams(BaseModel):
     """Pagination parameters."""
+
     page: int = Field(default=1, ge=1)
     page_size: int = Field(default=50, ge=1, le=1000)
     sort_by: Optional[str] = None
@@ -333,6 +362,7 @@ class PaginationParams(BaseModel):
 
 class FilterParams(BaseModel):
     """Filtering parameters."""
+
     status: Optional[TrainingStatus] = None
     robot_type: Optional[RobotTypeAPI] = None
     created_after: Optional[datetime] = None
@@ -344,6 +374,7 @@ class FilterParams(BaseModel):
 # WebSocket models
 class WebSocketMessage(BaseModel):
     """WebSocket message model."""
+
     type: str = Field(..., min_length=1)
     data: Dict[str, Any] = Field(default_factory=dict)
     timestamp: datetime = Field(default_factory=datetime.now)
@@ -351,6 +382,7 @@ class WebSocketMessage(BaseModel):
 
 class TrainingProgressMessage(WebSocketMessage):
     """Real-time training progress message."""
+
     type: str = "training_progress"
     session_id: str
     metrics: TrainingMetrics
@@ -358,12 +390,14 @@ class TrainingProgressMessage(WebSocketMessage):
 
 class SystemStatusMessage(WebSocketMessage):
     """System status update message."""
+
     type: str = "system_status"
     status: SystemStatus
 
 
 class ErrorMessage(WebSocketMessage):
     """Error message for WebSocket."""
+
     type: str = "error"
     error_code: str
     error_message: str
@@ -372,8 +406,9 @@ class ErrorMessage(WebSocketMessage):
 # Health check models
 class HealthCheckResponse(BaseModel):
     """Health check response."""
+
     model_config = ConfigDict(json_encoders={datetime: lambda v: v.isoformat()})
-    
+
     status: str = "healthy"
     version: str = "1.0.0"
     timestamp: datetime = Field(default_factory=datetime.now)
@@ -383,6 +418,7 @@ class HealthCheckResponse(BaseModel):
 
 class DetailedHealthCheck(HealthCheckResponse):
     """Detailed health check with component status."""
+
     components: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
     system_resources: Dict[str, Any] = Field(default_factory=dict)
     recent_errors: List[Dict[str, Any]] = Field(default_factory=list)
@@ -391,6 +427,7 @@ class DetailedHealthCheck(HealthCheckResponse):
 # Monitoring models
 class MonitoringMetrics(BaseModel):
     """System monitoring metrics."""
+
     timestamp: datetime = Field(default_factory=datetime.now)
     system_metrics: Dict[str, Any] = Field(default_factory=dict)
     training_metrics: Dict[str, Any] = Field(default_factory=dict)
@@ -400,6 +437,7 @@ class MonitoringMetrics(BaseModel):
 
 class SystemAlert(BaseModel):
     """System alert model."""
+
     alert_id: str
     alert_type: str  # system, resource, training, evaluation
     severity: str  # low, medium, high, critical
@@ -414,6 +452,7 @@ class SystemAlert(BaseModel):
 
 class AlertListResponse(BaseResponse):
     """List of system alerts response."""
+
     alerts: List[SystemAlert] = Field(default_factory=list)
     total_count: int = 0
     active_count: int = 0
@@ -421,6 +460,7 @@ class AlertListResponse(BaseResponse):
 
 class PerformanceReport(BaseModel):
     """Performance analysis report."""
+
     report_id: str
     period: str
     generated_at: datetime = Field(default_factory=datetime.now)

@@ -1,0 +1,37 @@
+{
+    "env": {
+        "n_envs": 1,
+        "episode_length": 1000,
+        "simulation_fps": 50,
+        "control_freq": 10,
+        "render": false,
+        "headless": true,
+        "target_velocity": 1.0
+    },
+    "ppo": {
+        "learning_rate": 0.0003,
+        "n_steps": 1024,
+        "batch_size": 32,
+        "n_epochs": 10,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_range": 0.2,
+        "ent_coef": 0.01,
+        "vf_coef": 0.5,
+        "max_grad_norm": 0.5,
+        "policy_kwargs": {
+            "net_arch": [128, 128]
+        }
+    },
+    "training": {
+        "total_timesteps": 50000,
+        "save_freq": 2500,
+        "log_interval": 1,
+        "eval_freq": 2500,
+        "eval_episodes": 3,
+        "seed": 42,
+        "device": "cuda",
+        "experiment_name": "learning_evolution_light",
+        "checkpoint_saves": [0, 5000, 10000, 20000, 30000, 50000]
+    }
+}

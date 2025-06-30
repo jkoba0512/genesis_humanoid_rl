@@ -7,7 +7,7 @@ from .aggregates import *
 __all__ = [
     # Value objects
     "SessionId",
-    "RobotId", 
+    "RobotId",
     "PlanId",
     "EpisodeId",
     "MotionCommand",
@@ -17,11 +17,9 @@ __all__ = [
     "SkillAssessment",
     "MasteryLevel",
     "MovementTrajectory",
-    
     # Entities
     "LearningEpisode",
     "CurriculumStage",
-    
     # Aggregates
     "LearningSession",
     "HumanoidRobot",

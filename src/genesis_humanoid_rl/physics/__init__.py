@@ -12,7 +12,7 @@ from .physics_manager import (
 
 __all__ = [
     "RobotGroundingCalculatorProtocol",
-    "DefaultRobotGroundingCalculator", 
+    "DefaultRobotGroundingCalculator",
     "RobotGroundingFactory",
     "GenesisPhysicsManager",
     "MockPhysicsManager",

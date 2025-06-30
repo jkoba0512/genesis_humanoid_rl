@@ -9,14 +9,20 @@ from datetime import datetime
 from enum import Enum
 
 from ..model.value_objects import (
-    SessionId, RobotId, EpisodeId, PlanId,
-    SkillType, MasteryLevel, PerformanceMetrics
+    SessionId,
+    RobotId,
+    EpisodeId,
+    PlanId,
+    SkillType,
+    MasteryLevel,
+    PerformanceMetrics,
 )
 from ..model.entities import EpisodeOutcome, CurriculumStage
 
 
 class EventType(Enum):
     """Types of domain events."""
+
     EPISODE_COMPLETED = "episode_completed"
     CURRICULUM_STAGE_ADVANCED = "curriculum_stage_advanced"
     SKILL_MASTERED = "skill_mastered"
@@ -28,14 +34,14 @@ class EventType(Enum):
 @dataclass(frozen=True)
 class EpisodeCompleted:
     """Published when a learning episode completes."""
-    
+
     event_id: str
     event_type: EventType
     occurred_at: datetime
     aggregate_id: str
     version: int
     metadata: Dict[str, Any]
-    
+
     episode_id: EpisodeId
     session_id: SessionId
     robot_id: RobotId
@@ -50,14 +56,14 @@ class EpisodeCompleted:
 @dataclass(frozen=True)
 class CurriculumStageAdvanced:
     """Published when robot advances to next curriculum stage."""
-    
+
     event_id: str
     event_type: EventType
     occurred_at: datetime
     aggregate_id: str
     version: int
     metadata: Dict[str, Any]
-    
+
     session_id: SessionId
     robot_id: RobotId
     plan_id: PlanId
@@ -73,14 +79,14 @@ class CurriculumStageAdvanced:
 @dataclass(frozen=True)
 class SkillMastered:
     """Published when robot masters a locomotion skill."""
-    
+
     event_id: str
     event_type: EventType
     occurred_at: datetime
     aggregate_id: str
     version: int
     metadata: Dict[str, Any]
-    
+
     robot_id: RobotId
     session_id: SessionId
     skill_type: SkillType
@@ -94,14 +100,14 @@ class SkillMastered:
 @dataclass(frozen=True)
 class LearningSessionStarted:
     """Published when a new learning session begins."""
-    
+
     event_id: str
     event_type: EventType
     occurred_at: datetime
     aggregate_id: str
     version: int
     metadata: Dict[str, Any]
-    
+
     session_id: SessionId
     robot_id: RobotId
     plan_id: PlanId
@@ -114,14 +120,14 @@ class LearningSessionStarted:
 @dataclass(frozen=True)
 class LearningSessionCompleted:
     """Published when a learning session completes."""
-    
+
     event_id: str
     event_type: EventType
     occurred_at: datetime
     aggregate_id: str
     version: int
     metadata: Dict[str, Any]
-    
+
     session_id: SessionId
     robot_id: RobotId
     plan_id: PlanId
@@ -131,23 +137,27 @@ class LearningSessionCompleted:
     session_duration_hours: float
     skills_mastered: List[SkillType]
     final_performance_metrics: PerformanceMetrics
-    completion_reason: str  # "curriculum_completed", "max_episodes", "manual_stop", etc.
+    completion_reason: (
+        str  # "curriculum_completed", "max_episodes", "manual_stop", etc.
+    )
 
 
 @dataclass(frozen=True)
 class PerformanceMilestoneReached:
     """Published when robot reaches a significant performance milestone."""
-    
+
     event_id: str
     event_type: EventType
     occurred_at: datetime
     aggregate_id: str
     version: int
     metadata: Dict[str, Any]
-    
+
     robot_id: RobotId
     session_id: SessionId
-    milestone_type: str  # "success_rate_threshold", "episode_count", "skill_combination", etc.
+    milestone_type: (
+        str  # "success_rate_threshold", "episode_count", "skill_combination", etc.
+    )
     milestone_value: float
     threshold_crossed: float
     performance_metrics: PerformanceMetrics
@@ -155,6 +165,7 @@ class PerformanceMilestoneReached:
 
 
 # Event factory functions
+
 
 def create_episode_completed_event(
     episode_id: EpisodeId,
@@ -165,11 +176,11 @@ def create_episode_completed_event(
     step_count: int,
     duration_seconds: float,
     performance_metrics: Optional[PerformanceMetrics] = None,
-    target_skill: Optional[SkillType] = None
+    target_skill: Optional[SkillType] = None,
 ) -> EpisodeCompleted:
     """Factory function for episode completed events."""
     import uuid
-    
+
     return EpisodeCompleted(
         event_id=str(uuid.uuid4()),
         event_type=EventType.EPISODE_COMPLETED,
@@ -185,7 +196,7 @@ def create_episode_completed_event(
         step_count=step_count,
         episode_duration_seconds=duration_seconds,
         performance_metrics=performance_metrics,
-        target_skill=target_skill
+        target_skill=target_skill,
     )
 
 
@@ -195,11 +206,11 @@ def create_curriculum_advanced_event(
     plan_id: PlanId,
     previous_stage: CurriculumStage,
     new_stage: CurriculumStage,
-    advancement_criteria: Dict[str, Any]
+    advancement_criteria: Dict[str, Any],
 ) -> CurriculumStageAdvanced:
     """Factory function for curriculum advancement events."""
     import uuid
-    
+
     return CurriculumStageAdvanced(
         event_id=str(uuid.uuid4()),
         event_type=EventType.CURRICULUM_STAGE_ADVANCED,
@@ -216,7 +227,7 @@ def create_curriculum_advanced_event(
         new_stage_name=new_stage.name,
         advancement_criteria_met=advancement_criteria,
         episodes_in_previous_stage=previous_stage.episodes_completed,
-        success_rate_in_previous_stage=previous_stage.get_success_rate()
+        success_rate_in_previous_stage=previous_stage.get_success_rate(),
     )
 
 
@@ -228,11 +239,11 @@ def create_skill_mastered_event(
     proficiency_score: float,
     episodes_to_mastery: int,
     training_time_hours: float,
-    evidence: Dict[str, Any]
+    evidence: Dict[str, Any],
 ) -> SkillMastered:
     """Factory function for skill mastery events."""
     import uuid
-    
+
     return SkillMastered(
         event_id=str(uuid.uuid4()),
         event_type=EventType.SKILL_MASTERED,
@@ -247,7 +258,7 @@ def create_skill_mastered_event(
         proficiency_score=proficiency_score,
         episodes_to_mastery=episodes_to_mastery,
         training_time_hours=training_time_hours,
-        mastery_evidence=evidence
+        mastery_evidence=evidence,
     )
 
 
@@ -258,11 +269,11 @@ def create_session_started_event(
     session_name: str,
     initial_stage_index: int,
     max_episodes: int,
-    target_skills: List[SkillType]
+    target_skills: List[SkillType],
 ) -> LearningSessionStarted:
     """Factory function for session started events."""
     import uuid
-    
+
     return LearningSessionStarted(
         event_id=str(uuid.uuid4()),
         event_type=EventType.LEARNING_SESSION_STARTED,
@@ -276,7 +287,7 @@ def create_session_started_event(
         session_name=session_name,
         initial_stage_index=initial_stage_index,
         max_episodes=max_episodes,
-        target_skills=target_skills
+        target_skills=target_skills,
     )
 
 
@@ -290,11 +301,11 @@ def create_session_completed_event(
     session_duration_hours: float,
     skills_mastered: List[SkillType],
     final_performance_metrics: PerformanceMetrics,
-    completion_reason: str
+    completion_reason: str,
 ) -> LearningSessionCompleted:
     """Factory function for session completed events."""
     import uuid
-    
+
     return LearningSessionCompleted(
         event_id=str(uuid.uuid4()),
         event_type=EventType.LEARNING_SESSION_COMPLETED,
@@ -311,7 +322,7 @@ def create_session_completed_event(
         session_duration_hours=session_duration_hours,
         skills_mastered=skills_mastered,
         final_performance_metrics=final_performance_metrics,
-        completion_reason=completion_reason
+        completion_reason=completion_reason,
     )
 
 
@@ -322,11 +333,11 @@ def create_milestone_reached_event(
     milestone_value: float,
     threshold_crossed: float,
     performance_metrics: PerformanceMetrics,
-    contributing_factors: Dict[str, Any]
+    contributing_factors: Dict[str, Any],
 ) -> PerformanceMilestoneReached:
     """Factory function for milestone reached events."""
     import uuid
-    
+
     return PerformanceMilestoneReached(
         event_id=str(uuid.uuid4()),
         event_type=EventType.PERFORMANCE_MILESTONE_REACHED,
@@ -340,5 +351,5 @@ def create_milestone_reached_event(
         milestone_value=milestone_value,
         threshold_crossed=threshold_crossed,
         performance_metrics=performance_metrics,
-        contributing_factors=contributing_factors
+        contributing_factors=contributing_factors,
     )

@@ -10,5 +10,5 @@ from .models import *
 from .endpoints import *
 
 __all__ = [
-    'create_app',
+    "create_app",
 ]

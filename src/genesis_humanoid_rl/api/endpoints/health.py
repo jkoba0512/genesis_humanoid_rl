@@ -25,7 +25,7 @@ router = APIRouter()
 async def health_check():
     """
     Basic health check endpoint.
-    
+
     Returns basic health status and system information.
     """
     return HealthCheckResponse(
@@ -34,8 +34,8 @@ async def health_check():
         dependencies={
             "genesis": "available",
             "database": "available",
-            "filesystem": "available"
-        }
+            "filesystem": "available",
+        },
     )
 
 
@@ -43,30 +43,27 @@ async def health_check():
 async def liveness_probe():
     """
     Kubernetes liveness probe endpoint.
-    
+
     Returns 200 if the service is running, regardless of dependencies.
     """
-    return HealthCheckResponse(
-        status="alive",
-        version="1.0.0"
-    )
+    return HealthCheckResponse(status="alive", version="1.0.0")
 
 
 @router.get("/ready", response_model=HealthCheckResponse)
 async def readiness_probe():
     """
     Kubernetes readiness probe endpoint.
-    
+
     Returns 200 only if the service is ready to accept traffic.
     """
     # Check critical dependencies
     dependencies = {}
     ready = True
-    
+
     # Check Genesis
     try:
         genesis_status = check_genesis_status()
-        if genesis_status['available']:
+        if genesis_status["available"]:
             dependencies["genesis"] = "ready"
         else:
             dependencies["genesis"] = "not_ready"
@@ -75,14 +72,15 @@ async def readiness_probe():
         logger.error(f"Genesis check failed: {e}")
         dependencies["genesis"] = "error"
         ready = False
-    
+
     # Check database (simplified - assume available for now)
     dependencies["database"] = "ready"
-    
+
     # Check filesystem
     try:
         # Simple filesystem check
         import tempfile
+
         with tempfile.NamedTemporaryFile() as f:
             f.write(b"test")
         dependencies["filesystem"] = "ready"
@@ -90,18 +88,17 @@ async def readiness_probe():
         logger.error(f"Filesystem check failed: {e}")
         dependencies["filesystem"] = "error"
         ready = False
-    
+
     status_code = 200 if ready else 503
-    
+
     response = HealthCheckResponse(
         status="ready" if ready else "not_ready",
         version="1.0.0",
-        dependencies=dependencies
+        dependencies=dependencies,
     )
-    
+
     return JSONResponse(
-        status_code=status_code,
-        content=response.model_dump(mode='json')
+        status_code=status_code, content=response.model_dump(mode="json")
     )
 
 
@@ -109,112 +106,110 @@ async def readiness_probe():
 async def detailed_health_check(request: Request):
     """
     Detailed health check with component status and metrics.
-    
+
     Provides comprehensive health information including system resources,
     component status, and recent errors.
     """
-    startup_time = getattr(request.app.state, 'startup_time', time.time())
+    startup_time = getattr(request.app.state, "startup_time", time.time())
     uptime = time.time() - startup_time
-    
+
     # System resources
     try:
         memory = psutil.virtual_memory()
-        disk = psutil.disk_usage('/')
-        
+        disk = psutil.disk_usage("/")
+
         system_resources = {
             "cpu": {
                 "count": psutil.cpu_count(),
                 "percent": psutil.cpu_percent(interval=1),
-                "load_avg": psutil.getloadavg() if hasattr(psutil, 'getloadavg') else None
+                "load_avg": (
+                    psutil.getloadavg() if hasattr(psutil, "getloadavg") else None
+                ),
             },
             "memory": {
                 "total_gb": memory.total / (1024**3),
                 "available_gb": memory.available / (1024**3),
-                "percent_used": memory.percent
+                "percent_used": memory.percent,
             },
             "disk": {
                 "total_gb": disk.total / (1024**3),
                 "free_gb": disk.free / (1024**3),
-                "percent_used": (disk.used / disk.total) * 100
-            }
+                "percent_used": (disk.used / disk.total) * 100,
+            },
         }
     except Exception as e:
         logger.error(f"Failed to get system resources: {e}")
         system_resources = {"error": str(e)}
-    
+
     # Component health checks
     components = {}
-    
+
     # Genesis component
     try:
         genesis_status = check_genesis_status()
         components["genesis"] = {
-            "status": "healthy" if genesis_status['available'] else "unhealthy",
-            "version": genesis_status.get('version', 'unknown'),
-            "details": genesis_status
+            "status": "healthy" if genesis_status["available"] else "unhealthy",
+            "version": genesis_status.get("version", "unknown"),
+            "details": genesis_status,
         }
     except Exception as e:
-        components["genesis"] = {
-            "status": "error",
-            "error": str(e)
-        }
-    
+        components["genesis"] = {"status": "error", "error": str(e)}
+
     # Database component (simplified)
     components["database"] = {
         "status": "healthy",
         "type": "sqlite",
-        "details": {"connection": "available"}
+        "details": {"connection": "available"},
     }
-    
+
     # Filesystem component
     try:
         import tempfile
+
         with tempfile.NamedTemporaryFile() as f:
             f.write(b"health_check_test")
         components["filesystem"] = {
             "status": "healthy",
-            "details": {"read_write": "available"}
+            "details": {"read_write": "available"},
         }
     except Exception as e:
-        components["filesystem"] = {
-            "status": "error",
-            "error": str(e)
-        }
-    
+        components["filesystem"] = {"status": "error", "error": str(e)}
+
     # API component
     components["api"] = {
         "status": "healthy",
         "uptime_seconds": uptime,
-        "config": getattr(request.app.state, 'config', {})
+        "config": getattr(request.app.state, "config", {}),
     }
-    
+
     # Recent errors (placeholder - would integrate with logging system)
     recent_errors = []
-    
+
     # Determine overall status
     unhealthy_components = [
-        name for name, component in components.items()
-        if component.get('status') != 'healthy'
+        name
+        for name, component in components.items()
+        if component.get("status") != "healthy"
     ]
-    
+
     if not unhealthy_components:
         overall_status = "healthy"
     elif len(unhealthy_components) < len(components) / 2:
         overall_status = "degraded"
     else:
         overall_status = "unhealthy"
-    
+
     return DetailedHealthCheck(
         status=overall_status,
         version="1.0.0",
         uptime=uptime,
         dependencies={
-            name: component.get('status', 'unknown')
+            name: component.get("status", "unknown")
             for name, component in components.items()
         },
         components=components,
         system_resources=system_resources,
-        recent_errors=recent_errors
+        recent_errors=recent_errors,
     )
 
 
@@ -222,19 +217,19 @@ async def detailed_health_check(request: Request):
 async def health_metrics():
     """
     Prometheus-style metrics endpoint.
-    
+
     Returns metrics in Prometheus text format for monitoring systems.
     """
     try:
         # Get system metrics
         cpu_percent = psutil.cpu_percent()
         memory = psutil.virtual_memory()
-        disk = psutil.disk_usage('/')
-        
+        disk = psutil.disk_usage("/")
+
         # Check Genesis
         genesis_status = check_genesis_status()
-        genesis_available = 1 if genesis_status['available'] else 0
-        
+        genesis_available = 1 if genesis_status["available"] else 0
+
         # Format as Prometheus metrics
         metrics = f"""# HELP genesis_rl_api_up API service status
 # TYPE genesis_rl_api_up gauge
@@ -272,15 +267,11 @@ genesis_rl_disk_bytes{{type="total"}} {disk.total}
 genesis_rl_disk_bytes{{type="free"}} {disk.free}
 genesis_rl_disk_bytes{{type="used"}} {disk.used}
 """
-        
-        return JSONResponse(
-            content=metrics,
-            media_type="text/plain"
-        )
-        
+
+        return JSONResponse(content=metrics, media_type="text/plain")
+
     except Exception as e:
         logger.error(f"Failed to generate metrics: {e}")
         return JSONResponse(
-            status_code=500,
-            content={"error": "Failed to generate metrics"}
+            status_code=500, content={"error": "Failed to generate metrics"}
         )

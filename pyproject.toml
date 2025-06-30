@@ -21,6 +21,8 @@ dependencies = [
     "psutil>=5.9.0",
     "python-multipart>=0.0.6",
     "pytest-asyncio>=1.0.0",
+    "imageio[ffmpeg]>=2.37.0",
+    "gputil>=1.4.0",
 ]
 
 [project.optional-dependencies]

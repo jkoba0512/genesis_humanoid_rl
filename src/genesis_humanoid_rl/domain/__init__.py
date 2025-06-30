@@ -10,9 +10,8 @@ from .events import *
 __all__ = [
     # Domain entities and aggregates
     "LearningSession",
-    "HumanoidRobot", 
+    "HumanoidRobot",
     "CurriculumPlan",
-    
     # Value objects
     "SessionId",
     "RobotId",
@@ -20,15 +19,13 @@ __all__ = [
     "MotionCommand",
     "LocomotionSkill",
     "PerformanceMetrics",
-    
     # Domain services
     "MovementQualityAnalyzer",
     "CurriculumProgressionService",
     "SkillAssessmentService",
-    
     # Domain events
     "EpisodeCompleted",
-    "CurriculumStageAdvanced", 
+    "CurriculumStageAdvanced",
     "SkillMastered",
     "DomainEvent",
 ]

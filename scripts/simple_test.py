@@ -12,9 +12,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from genesis_humanoid_rl.environments.sb3_wrapper import make_humanoid_env
 import numpy as np
 
+
 def main():
     print("=== Simple Environment Test ===")
-    
+
     # Create environment with minimal settings
     env = make_humanoid_env(
         episode_length=10,  # Very short episode
@@ -22,16 +23,16 @@ def main():
         control_freq=10,
         target_velocity=1.0,
     )
-    
+
     print(f"Environment created successfully!")
     print(f"Observation space: {env.observation_space}")
     print(f"Action space: {env.action_space}")
-    
+
     # Test reset
     print("\nTesting environment reset...")
     obs, info = env.reset()
     print(f"Reset successful. Observation shape: {obs.shape}")
-    
+
     # Test a few steps
     print("\nTesting environment steps...")
     total_reward = 0
@@ -39,16 +40,19 @@ def main():
         action = env.action_space.sample()  # Random action
         obs, reward, terminated, truncated, info = env.step(action)
         total_reward += reward
-        
-        print(f"Step {step+1}: reward={reward:.3f}, terminated={terminated}, truncated={truncated}")
-        
+
+        print(
+            f"Step {step+1}: reward={reward:.3f}, terminated={terminated}, truncated={truncated}"
+        )
+
         if terminated or truncated:
             print("Episode ended early")
             break
-    
+
     print(f"\nTest completed successfully!")
     print(f"Total reward: {total_reward:.3f}")
     print(f"Final observation shape: {obs.shape}")
+
 
 if __name__ == "__main__":
     main()

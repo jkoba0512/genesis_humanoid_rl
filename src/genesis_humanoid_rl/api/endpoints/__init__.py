@@ -13,9 +13,9 @@ from .monitoring import router as monitoring_router
 
 __all__ = [
     "health_router",
-    "system_router", 
+    "system_router",
     "training_router",
     "evaluation_router",
     "robots_router",
-    "monitoring_router"
+    "monitoring_router",
 ]

@@ -1,0 +1,57 @@
+{
+    "description": "Real training test: 10k timesteps (short validation)",
+    "training": {
+        "total_timesteps": 10000,
+        "n_envs": 1,
+        "batch_size": 32,
+        "n_steps": 256,
+        "save_freq": 2500,
+        "checkpoint_saves": [2500, 5000, 7500, 10000],
+        "eval_freq": 2500,
+        "log_interval": 10
+    },
+    "environment": {
+        "episode_length": 400,
+        "simulation_fps": 60,
+        "control_freq": 30,
+        "render": false,
+        "headless": true,
+        "target_velocity": 1.0,
+        "environment_size": [20, 20],
+        "safety_distance_limit": 15.0
+    },
+    "rewards": {
+        "forward_velocity": 1.5,
+        "distance_traveled": 1.0,
+        "stability": 1.0,
+        "height_maintenance": 0.5,
+        "energy_efficiency": -0.1,
+        "action_smoothness": -0.1,
+        "height_safety": -1.0,
+        "distance_bonus_threshold": 2.0,
+        "distance_bonus_multiplier": 1.5
+    },
+    "ppo": {
+        "learning_rate": 0.0003,
+        "n_epochs": 4,
+        "clip_range": 0.2,
+        "clip_range_vf": null,
+        "ent_coef": 0.01,
+        "vf_coef": 0.5,
+        "max_grad_norm": 0.5,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "normalize_advantage": true
+    },
+    "network": {
+        "policy_kwargs": {
+            "net_arch": [128, 128]
+        }
+    },
+    "monitoring": {
+        "tensorboard_log": "./logs/real_test",
+        "video_save_path": "./videos/real_test",
+        "checkpoint_path": "./models/real_test",
+        "status_file": "./real_test_status.json"
+    }
+}
