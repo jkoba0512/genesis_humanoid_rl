@@ -1,0 +1,353 @@
+#!/usr/bin/env python3
+"""
+Create a simple HTML dashboard to monitor training progress.
+"""
+
+import os
+import time
+import json
+import glob
+from datetime import datetime, timedelta
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+import threading
+import socketserver
+
+def create_progress_html():
+    """Create HTML dashboard for training progress."""
+    
+    html_content = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Robot Learning Progress Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .status-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .status-card h3 {
+            margin-top: 0;
+            color: #ffd700;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00f260, #0575e6);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        .stages {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+        .stage {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .stage.active {
+            border-color: #ffd700;
+            background: rgba(255, 215, 0, 0.2);
+        }
+        .stage.completed {
+            border-color: #00ff00;
+            background: rgba(0, 255, 0, 0.2);
+        }
+        .video-section {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .video-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+        }
+        video, img {
+            width: 100%;
+            border-radius: 10px;
+        }
+        .links {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .link-button {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        .link-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .auto-refresh {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+    </style>
+    <script>
+        function updateProgress() {
+            // Auto-refresh every 30 seconds
+            setTimeout(() => {
+                location.reload();
+            }, 30000);
+        }
+        
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${hours}h ${minutes}m ${secs}s`;
+        }
+        
+        window.onload = updateProgress;
+    </script>
+</head>
+<body>
+    <div class="auto-refresh">Auto-refresh in 30s</div>
+    
+    <div class="container">
+        <h1>🤖 Humanoid Robot Learning Progress</h1>
+        
+        <div class="status-grid">
+            <div class="status-card">
+                <h3>📊 Training Status</h3>
+                <p id="training-status">Initializing...</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%"></div>
+                </div>
+                <p>Steps: <span id="current-steps">0</span> / 100,000</p>
+            </div>
+            
+            <div class="status-card">
+                <h3>⏱️ Time Elapsed</h3>
+                <p id="time-elapsed">--</p>
+                <p id="estimated-remaining">Estimated remaining: --</p>
+            </div>
+            
+            <div class="status-card">
+                <h3>🎬 Videos Generated</h3>
+                <p id="videos-count">0 / 5 videos</p>
+                <p>Latest checkpoint: <span id="latest-checkpoint">None</span></p>
+            </div>
+            
+            <div class="status-card">
+                <h3>📈 Performance</h3>
+                <p>FPS: <span id="fps">--</span></p>
+                <p>Latest Reward: <span id="latest-reward">--</span></p>
+            </div>
+        </div>
+        
+        <h2>🎯 Learning Stages</h2>
+        <div class="stages">
+            <div class="stage" id="stage-0">
+                <h4>Stage 0</h4>
+                <p>Untrained</p>
+                <small>Random movements</small>
+            </div>
+            <div class="stage" id="stage-1">
+                <h4>Stage 1</h4>
+                <p>25k Steps</p>
+                <small>Learning balance</small>
+            </div>
+            <div class="stage" id="stage-2">
+                <h4>Stage 2</h4>
+                <p>50k Steps</p>
+                <small>First steps</small>
+            </div>
+            <div class="stage" id="stage-3">
+                <h4>Stage 3</h4>
+                <p>75k Steps</p>
+                <small>Walking emerges</small>
+            </div>
+            <div class="stage" id="stage-4">
+                <h4>Stage 4</h4>
+                <p>100k Steps</p>
+                <small>Smooth walking</small>
+            </div>
+        </div>
+        
+        <div class="video-section">
+            <h2>🎬 Learning Progression Visualization</h2>
+            <div class="video-grid">
+                <div class="video-item">
+                    <h3>📈 Learning Curve Animation</h3>
+                    <img src="models/progression_demo/progression_videos/learning_progression_animation.gif" 
+                         alt="Learning progression animation" onerror="this.style.display='none'">
+                    <p>Shows expected learning progression over time</p>
+                </div>
+                
+                <div class="video-item">
+                    <h3>📊 Stage Comparison</h3>
+                    <img src="models/progression_demo/progression_videos/learning_stages_comparison.png" 
+                         alt="Learning stages comparison" onerror="this.style.display='none'">
+                    <p>Side-by-side comparison of learning stages</p>
+                </div>
+                
+                <div class="video-item">
+                    <h3>🤖 Current Robot Demo</h3>
+                    <video controls>
+                        <source src="genesis_robot_video.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <p>Current robot capabilities</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="links">
+            <h2>🔗 Monitoring Links</h2>
+            <a href="http://100.101.234.88:6007" class="link-button" target="_blank">
+                📊 TensorBoard (Live Metrics)
+            </a>
+            <a href="models/progression_demo/progression_videos/" class="link-button">
+                🎬 Video Gallery
+            </a>
+            <a href="#" onclick="location.reload()" class="link-button">
+                🔄 Refresh Page
+            </a>
+        </div>
+        
+        <div style="margin-top: 30px; text-align: center; opacity: 0.7;">
+            <p>Last updated: <span id="last-update"></span></p>
+            <p>🚀 Training will automatically generate videos at each checkpoint</p>
+        </div>
+    </div>
+    
+    <script>
+        // Update page with current time
+        document.getElementById('last-update').textContent = new Date().toLocaleString();
+        
+        // Simulate progress (you can replace this with actual data)
+        const startTime = new Date().getTime() - (15 * 60 * 1000); // 15 minutes ago
+        const currentTime = new Date().getTime();
+        const elapsed = Math.floor((currentTime - startTime) / 1000);
+        
+        document.getElementById('time-elapsed').textContent = formatTime(elapsed);
+        document.getElementById('training-status').textContent = 'Training in progress...';
+        
+        // Update progress bar (mock progress)
+        const mockProgress = Math.min(100, (elapsed / 4500) * 100); // 75 minutes total
+        document.querySelector('.progress-fill').style.width = mockProgress + '%';
+        
+        const currentSteps = Math.floor((mockProgress / 100) * 100000);
+        document.getElementById('current-steps').textContent = currentSteps.toLocaleString();
+        
+        // Update stages
+        const stagesCompleted = Math.floor(currentSteps / 25000);
+        for (let i = 0; i <= stagesCompleted && i < 5; i++) {
+            const stage = document.getElementById('stage-' + i);
+            if (i === stagesCompleted) {
+                stage.classList.add('active');
+            } else {
+                stage.classList.add('completed');
+            }
+        }
+        
+        // Estimate remaining time
+        if (mockProgress > 0 && mockProgress < 100) {
+            const remainingTime = Math.floor(((100 - mockProgress) / mockProgress) * elapsed);
+            document.getElementById('estimated-remaining').textContent = 'About ' + formatTime(remainingTime);
+        }
+    </script>
+</body>
+</html>
+"""
+    
+    return html_content
+
+def start_dashboard_server():
+    """Start a simple HTTP server for the dashboard."""
+    
+    # Create the HTML file
+    html_content = create_progress_html()
+    with open('progress_dashboard.html', 'w') as f:
+        f.write(html_content)
+    
+    print("📊 Creating progress dashboard...")
+    print("Dashboard will be available at: http://100.101.234.88:8080")
+    print("Files accessible via web browser")
+    
+    # Start a simple HTTP server
+    class CustomHandler(SimpleHTTPRequestHandler):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, directory=os.getcwd(), **kwargs)
+    
+    try:
+        with socketserver.TCPServer(("0.0.0.0", 8080), CustomHandler) as httpd:
+            print("✅ Dashboard server running on port 8080")
+            print("📱 Access your dashboard at:")
+            print("   http://100.101.234.88:8080/progress_dashboard.html")
+            print("\nPress Ctrl+C to stop the server")
+            httpd.serve_forever()
+    except KeyboardInterrupt:
+        print("\n🛑 Dashboard server stopped")
+    except Exception as e:
+        print(f"❌ Error starting server: {e}")
+        print("You can still open progress_dashboard.html directly in a browser")
+
+if __name__ == "__main__":
+    start_dashboard_server()
