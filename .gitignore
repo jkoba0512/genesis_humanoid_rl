@@ -105,4 +105,10 @@ verify_*.py
 # External repositories (use as references, not submodules)
 genesis_humanoid_learning/
 assets/robots/g1/awesome-robot-descriptions/
-*.log\ngenesis_reports/\nperformance_reports/
+*.log
+genesis_reports/
+performance_reports/
+
+# Documentation backups
+*.backup
+CLAUDE.md.backup
